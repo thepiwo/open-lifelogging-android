@@ -21,7 +21,7 @@ constructor(@Named("unauthorized") unauthorizedLoggingApi: LoggingApi,
 
     class ApiTimeoutException : Exception("There was a connection timeout, try again later")
 
-    class DataNotChangedException : Exception("Data has not changed")
+    class AuthorizationException : Exception("Login failed")
 
     class LoginRequiredException : Exception("Login required")
 
@@ -63,6 +63,8 @@ constructor(@Named("unauthorized") unauthorizedLoggingApi: LoggingApi,
         })
     }
 
-    fun login(loginPassword: LoginPassword): Observable<Token> = failOnErrorResult(unauthorizedLoggingApi.getLogin(loginPassword))
+    fun login(loginPassword: LoginPassword): Observable<Token> = failOnErrorResult(unauthorizedLoggingApi.login(loginPassword))
+
+    fun createLogItem(logEntryInsert: LogEntryInsert): Observable<LogEntityReturn> = failOnErrorResult(authorizedLoggingApi.createLogItem(logEntryInsert))
 
 }

@@ -49,6 +49,10 @@ class MainActivity : BaseActivity() {
             }
         }
 
+        if (hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            authHelper.setLocationAllowed(true)
+            dataHandler.startLocationService(this)
+        }
 
     }
 

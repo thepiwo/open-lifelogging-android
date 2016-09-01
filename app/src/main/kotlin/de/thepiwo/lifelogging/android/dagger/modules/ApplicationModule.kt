@@ -43,8 +43,8 @@ class ApplicationModule(private val application: BaseApplication) {
     // -------- COMMUNICATION: Cache, Retrofit, OkHttp, API --------
     @Provides
     @ForApplication
-    fun provideAuthHelper(sharedPreferences: SharedPreferences): AuthHelper {
-        return AuthHelper(sharedPreferences)
+    fun provideAuthHelper(gson: Gson, sharedPreferences: SharedPreferences): AuthHelper {
+        return AuthHelper(gson, sharedPreferences)
     }
 
     @Provides

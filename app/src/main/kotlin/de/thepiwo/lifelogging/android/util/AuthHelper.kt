@@ -1,6 +1,8 @@
 package de.thepiwo.lifelogging.android.util
 
 import android.content.SharedPreferences
+import com.github.salomonbrys.kotson.fromJson
+import com.google.gson.Gson
 import com.mcxiaoke.koi.Const
 import de.thepiwo.lifelogging.android.api.models.LoginPassword
 import de.thepiwo.lifelogging.android.api.models.Token
@@ -10,7 +12,7 @@ import javax.inject.Inject
 @ForApplication
 class AuthHelper
 @Inject
-constructor(private val sharedPreferences: SharedPreferences) {
+constructor(val gson: Gson, private val sharedPreferences: SharedPreferences) {
 
     private var editor: SharedPreferences.Editor? = null
 
@@ -83,14 +85,25 @@ constructor(private val sharedPreferences: SharedPreferences) {
         }
     }
 
+    fun getToken(): Token? {
+        if (this.token != null) {
+            return token
+        }
+
+        val tokenJson = sharedPreferences.getString(TOKEN, null)
+        if (tokenJson != null) {
+            token = gson.fromJson<Token>(tokenJson)
+        }
+
+        return token
+    }
+
     fun setToken(token: Token?) {
         if (token != null) {
             this.token = token
+            getEditor().putString(TOKEN, gson.toJson(token))
+            editor!!.commit()
         }
-    }
-
-    fun getToken(): Token? {
-        return this.token
     }
 
     fun emptySharedPrefs() {
@@ -110,10 +123,15 @@ constructor(private val sharedPreferences: SharedPreferences) {
         return getLoginData() != null
     }
 
+    fun sessionIsAuthorized(): Boolean {
+        return getToken() != null
+    }
+
     companion object {
         private val LOCATION_ALLOWED = "auth_helper_location_allowed"
         private val PASSWORD = "auth_helper_password"
         private val USERNAME = "auth_helper_username"
         private val API_URL = "auth_helper_api_url"
+        private val TOKEN = "auth_helper_token"
     }
 }

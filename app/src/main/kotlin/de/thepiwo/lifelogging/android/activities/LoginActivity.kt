@@ -10,6 +10,8 @@ import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.Constants
 import de.thepiwo.lifelogging.android.util.DataHandler
 import org.jetbrains.anko.*
+import rx.android.schedulers.AndroidSchedulers
+import rx.schedulers.Schedulers
 import javax.inject.Inject
 
 class LoginActivity : BaseActivity() {
@@ -61,8 +63,22 @@ class LoginActivity : BaseActivity() {
         authHelper.setApiUrl(apiUrl)
         authHelper.setUsername(username)
         authHelper.setPassword(password)
-        navigator.navigateToMainActivity(this)
-        finish()
+
+        dataHandler.login()
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        {
+                            Log.i("LoginActivity", "login successful")
+                            navigator.navigateToMainActivity(this)
+                            finish()
+                        },
+                        { error ->
+                            toast(error.message ?: "login error")
+                        }
+                )
+
+
     }
 
     companion object {

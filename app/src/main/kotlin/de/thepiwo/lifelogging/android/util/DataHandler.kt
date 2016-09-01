@@ -9,16 +9,32 @@ import android.util.Log
 import com.google.gson.Gson
 import com.mcxiaoke.koi.ext.getLocationManager
 import de.thepiwo.lifelogging.android.api.LoggingApiService
+import de.thepiwo.lifelogging.android.api.models.LogCoordEntity
+import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
 import de.thepiwo.lifelogging.android.dagger.ForApplication
+import rx.Observable
+import rx.android.schedulers.AndroidSchedulers
+import rx.schedulers.Schedulers
 import javax.inject.Inject
 
 @ForApplication
 class DataHandler
 @Inject
-constructor(val gson: Gson,
-            val balanceApiService: LoggingApiService,
+constructor(val loggingApiService: LoggingApiService,
             val authHelper: AuthHelper) {
 
+
+    fun login(): Observable<Boolean> {
+        if (authHelper.sessionIsAvailable()) {
+            val login = loggingApiService.login(authHelper.getLoginData()!!)
+            return login.flatMap { t ->
+                authHelper.setToken(t)
+                return@flatMap Observable.just(true)
+            }
+        } else {
+            return Observable.error(LoggingApiService.AuthorizationException())
+        }
+    }
 
     private val locationListener = object : LocationListener {
         override fun onProviderDisabled(p0: String?) {
@@ -32,25 +48,30 @@ constructor(val gson: Gson,
 
         override fun onLocationChanged(location: Location) {
             Log.i("locationListener", "location: $location")
+            val logCoordEntity = LogCoordEntity(null, null, location.latitude, location.longitude, location.altitude, location.accuracy)
+
+            loggingApiService.createLogItem(LogEntryInsert(logCoordEntity))
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            {
+                                Log.i("DataHandler", "location sent")
+                            },
+                            { error ->
+                                error.printStackTrace()
+                                Log.e("DataHandler", "location error: ${error.message}")
+                            }
+                    )
         }
     }
 
     fun startLocationService(context: Context) {
-        if (authHelper.sessionIsAvailable() && authHelper.getLocationAllowed()) {
-            /*        val serviceIntent = Intent(context, LocationService::class.java)
+        Log.i("DataHandler", "sessionIsAuthorized ${authHelper.sessionIsAuthorized()}")
+        Log.i("DataHandler", "getLocationAllowed ${authHelper.getLocationAllowed()}")
 
-                    val cal = Calendar.getInstance()
-                    val pIntent = PendingIntent.getService(context, 0, serviceIntent, 0)
-                    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                    val updateTime = (1 * 60 * 1000).toLong()
-                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, cal.timeInMillis, updateTime, pIntent)
-                    context.startService(serviceIntent)
-
-                    Log.i("DataHandler", "started location service")
-                }*/
-
+        if (authHelper.sessionIsAuthorized() && authHelper.getLocationAllowed()) {
             val lm = context.getLocationManager()
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 5, 5f, locationListener)
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 10, 2000f, locationListener)
             Log.i("DataHandler", "started location listener")
 
         }
