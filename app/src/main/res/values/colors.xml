@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="black" type="color">#000000</item>
+    <item name="dark_gray" type="color">#37474F</item>
+    <item name="gray" type="color">#526069</item>
+    <item name="light_gray" type="color">#c6cccf</item>
+    <item name="white" type="color">#ffffff</item>
+    <item name="clear" type="color">#00000000</item>
+
+    <color name="colorPrimary">#AFA72E</color>
+    <color name="colorPrimaryDark">#AF972E</color>
+    <color name="colorAccent">#4E2676</color>
+
+</resources>
