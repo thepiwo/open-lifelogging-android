@@ -6,6 +6,7 @@ import de.thepiwo.lifelogging.android.api.models.LoginPassword
 import de.thepiwo.lifelogging.android.api.models.Token
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.http.Path
 import rx.Observable
 
 interface LoggingApi {
@@ -15,8 +16,9 @@ interface LoggingApi {
             @Body loginPassword: LoginPassword
     ): Observable<Token>
 
-    @POST("logs/key/location")
+    @POST("logs/key/{key}")
     fun createLogItem(
+            @Path("key") key: String,
             @Body logEntryInsert: LogEntryInsert
     ): Observable<LogEntityReturn>
 }

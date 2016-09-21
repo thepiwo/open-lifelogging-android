@@ -4,13 +4,15 @@ import android.content.Context
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.wifi.SupplicantState
+import android.net.wifi.WifiInfo
 import android.os.Bundle
 import android.util.Log
-import com.google.gson.Gson
 import com.mcxiaoke.koi.ext.getLocationManager
 import de.thepiwo.lifelogging.android.api.LoggingApiService
 import de.thepiwo.lifelogging.android.api.models.LogCoordEntity
 import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
+import de.thepiwo.lifelogging.android.api.models.LogWifiEntity
 import de.thepiwo.lifelogging.android.dagger.ForApplication
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
@@ -36,6 +38,21 @@ constructor(val loggingApiService: LoggingApiService,
         }
     }
 
+    fun createLogItem(logEntryInsert: LogEntryInsert) {
+        loggingApiService.createLogItem(logEntryInsert)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        {
+                            Log.i("DataHandler", "logItem sent $logEntryInsert")
+                        },
+                        { error ->
+                            error.printStackTrace()
+                            Log.e("DataHandler", "logItem error: ${error.message}")
+                        }
+                )
+    }
+
     private val locationListener = object : LocationListener {
         override fun onProviderDisabled(p0: String?) {
         }
@@ -49,19 +66,7 @@ constructor(val loggingApiService: LoggingApiService,
         override fun onLocationChanged(location: Location) {
             Log.i("locationListener", "location: $location")
             val logCoordEntity = LogCoordEntity(null, null, location.latitude, location.longitude, location.altitude, location.accuracy)
-
-            loggingApiService.createLogItem(LogEntryInsert(logCoordEntity))
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                            {
-                                Log.i("DataHandler", "location sent")
-                            },
-                            { error ->
-                                error.printStackTrace()
-                                Log.e("DataHandler", "location error: ${error.message}")
-                            }
-                    )
+            createLogItem(LogEntryInsert(logCoordEntity))
         }
     }
 
@@ -71,9 +76,19 @@ constructor(val loggingApiService: LoggingApiService,
 
         if (authHelper.sessionIsAuthorized() && authHelper.getLocationAllowed()) {
             val lm = context.getLocationManager()
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 10, 2000f, locationListener)
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 5, 500f, locationListener)
             Log.i("DataHandler", "started location listener")
 
+        }
+    }
+
+    fun handleWifiInfo(connectionInfo: WifiInfo) {
+
+        if (connectionInfo.supplicantState == SupplicantState.COMPLETED || connectionInfo.supplicantState == SupplicantState.DISCONNECTED) {
+
+            Log.i("DataHandler", "handleWifiInfo: $connectionInfo")
+            val logWifiEntity = LogWifiEntity(null, null, connectionInfo.ssid, connectionInfo.linkSpeed, connectionInfo.supplicantState.name)
+            createLogItem(LogEntryInsert(logWifiEntity))
         }
     }
 }
