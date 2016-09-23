@@ -65,6 +65,6 @@ constructor(@Named("unauthorized") unauthorizedLoggingApi: LoggingApi,
 
     fun login(loginPassword: LoginPassword): Observable<Token> = failOnErrorResult(unauthorizedLoggingApi.login(loginPassword))
 
-    fun createLogItem(logEntryInsert: LogEntryInsert): Observable<LogEntityReturn> = failOnErrorResult(authorizedLoggingApi.createLogItem(logEntryInsert.key, logEntryInsert))
+    fun createLogItem(logEntryInsert: LogEntryInsert): Observable<LogEntityReturn> = failOnErrorResult(authorizedLoggingApi.createLogItem(logEntryInsert.type, mapOf("logEntities" to logEntryInsert)))
 
 }

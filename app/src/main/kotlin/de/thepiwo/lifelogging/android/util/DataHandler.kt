@@ -10,9 +10,9 @@ import android.os.Bundle
 import android.util.Log
 import com.mcxiaoke.koi.ext.getLocationManager
 import de.thepiwo.lifelogging.android.api.LoggingApiService
-import de.thepiwo.lifelogging.android.api.models.LogCoordEntity
+import de.thepiwo.lifelogging.android.api.models.logentities.CoordEntity
 import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
-import de.thepiwo.lifelogging.android.api.models.LogWifiEntity
+import de.thepiwo.lifelogging.android.api.models.logentities.WifiEntity
 import de.thepiwo.lifelogging.android.dagger.ForApplication
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
@@ -65,7 +65,7 @@ constructor(val loggingApiService: LoggingApiService,
 
         override fun onLocationChanged(location: Location) {
             Log.i("locationListener", "location: $location")
-            val logCoordEntity = LogCoordEntity(null, null, location.latitude, location.longitude, location.altitude, location.accuracy)
+            val logCoordEntity = CoordEntity(null, null, location.latitude, location.longitude, location.altitude, location.accuracy)
             createLogItem(LogEntryInsert(logCoordEntity))
         }
     }
@@ -76,7 +76,7 @@ constructor(val loggingApiService: LoggingApiService,
 
         if (authHelper.sessionIsAuthorized() && authHelper.getLocationAllowed()) {
             val lm = context.getLocationManager()
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 5, 500f, locationListener)
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 1, 500f, locationListener)
             Log.i("DataHandler", "started location listener")
 
         }
@@ -87,7 +87,7 @@ constructor(val loggingApiService: LoggingApiService,
         if (connectionInfo.supplicantState == SupplicantState.COMPLETED || connectionInfo.supplicantState == SupplicantState.DISCONNECTED) {
 
             Log.i("DataHandler", "handleWifiInfo: $connectionInfo")
-            val logWifiEntity = LogWifiEntity(null, null, connectionInfo.ssid, connectionInfo.linkSpeed, connectionInfo.supplicantState.name)
+            val logWifiEntity = WifiEntity(null, null, connectionInfo.ssid, connectionInfo.linkSpeed, connectionInfo.supplicantState.name)
             createLogItem(LogEntryInsert(logWifiEntity))
         }
     }

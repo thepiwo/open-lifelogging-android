@@ -1,8 +1,8 @@
-package de.thepiwo.lifelogging.android.api.models
+package de.thepiwo.lifelogging.android.api.models.logentities
 
 import java.io.Serializable
 
-class LogCoordEntity : Serializable {
+class CoordEntity : Serializable {
 
     var id: Long?
     var logEntityId: Long?

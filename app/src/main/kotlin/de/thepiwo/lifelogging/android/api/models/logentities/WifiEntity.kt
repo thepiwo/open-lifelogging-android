@@ -1,8 +1,8 @@
-package de.thepiwo.lifelogging.android.api.models
+package de.thepiwo.lifelogging.android.api.models.logentities
 
 import java.io.Serializable
 
-class LogWifiEntity : Serializable {
+class WifiEntity : Serializable {
 
     var id: Long?
     var logEntityId: Long?

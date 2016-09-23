@@ -19,6 +19,6 @@ interface LoggingApi {
     @POST("logs/key/{key}")
     fun createLogItem(
             @Path("key") key: String,
-            @Body logEntryInsert: LogEntryInsert
+            @Body logEntities: Map<String, LogEntryInsert>
     ): Observable<LogEntityReturn>
 }

@@ -1,5 +1,6 @@
 package de.thepiwo.lifelogging.android.api.models
 
+import de.thepiwo.lifelogging.android.api.models.logentities.CoordEntity
 import java.io.Serializable
 
 class LogEntityReturn : Serializable {
@@ -7,12 +8,12 @@ class LogEntityReturn : Serializable {
     var id: Long?
     var userId: Long?
     var key: String
-    var logCoordEntity: LogCoordEntity
+    var coordEntity: CoordEntity
 
-    constructor(id: Long?, userId: Long?, key: String, logCoordEntity: LogCoordEntity) {
+    constructor(id: Long?, userId: Long?, key: String, coordEntity: CoordEntity) {
         this.id = id
         this.userId = userId
         this.key = key
-        this.logCoordEntity = logCoordEntity
+        this.coordEntity = coordEntity
     }
 }
