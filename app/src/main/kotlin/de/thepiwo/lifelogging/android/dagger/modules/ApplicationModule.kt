@@ -8,6 +8,7 @@ import dagger.Module
 import dagger.Provides
 import de.thepiwo.lifelogging.android.BaseApplication
 import de.thepiwo.lifelogging.android.api.LoggingApi
+import de.thepiwo.lifelogging.android.api.LoggingApiService
 import de.thepiwo.lifelogging.android.dagger.ForApplication
 import de.thepiwo.lifelogging.android.util.*
 import okhttp3.Cache
@@ -45,6 +46,12 @@ class ApplicationModule(private val application: BaseApplication) {
     @ForApplication
     fun provideAuthHelper(gson: Gson, sharedPreferences: SharedPreferences): AuthHelper {
         return AuthHelper(gson, sharedPreferences)
+    }
+
+    @Provides
+    @ForApplication
+    fun provideDataHandler(loggingApiService: LoggingApiService, authHelper: AuthHelper): DataHandler {
+        return DataHandler(loggingApiService, authHelper)
     }
 
     @Provides

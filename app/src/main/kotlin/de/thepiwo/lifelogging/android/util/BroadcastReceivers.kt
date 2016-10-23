@@ -16,6 +16,7 @@ class BootCompletedReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         (context.applicationContext as Application).component.inject(this)
+
         dataHandler.startLocationService(context)
     }
 }
@@ -27,6 +28,7 @@ class LocationChangedReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         (context.applicationContext as Application).component.inject(this)
+
         dataHandler.startLocationService(context)
     }
 }
@@ -37,6 +39,8 @@ class WifiChangeReceiver : BroadcastReceiver() {
     lateinit var dataHandler: DataHandler
 
     override fun onReceive(context: Context, intent: Intent) {
+        (context.applicationContext as Application).component.inject(this)
+
         val wifi = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
         dataHandler.handleWifiInfo(wifi.connectionInfo)
     }
