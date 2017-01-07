@@ -6,19 +6,16 @@ import java.io.Serializable
 
 class LogEntryInsert : Serializable {
 
-    var type: String
-    var CoordEntity: CoordEntity?
-    var WifiEntity: WifiEntity?
+    var key: String
+    var data: Any
 
     constructor(coordEntity: CoordEntity) {
-        this.type = "CoordEntity"
-        this.CoordEntity = coordEntity
-        this.WifiEntity = null
+        this.key = "CoordEntity"
+        this.data = coordEntity
     }
 
     constructor(wifiEntity: WifiEntity) {
-        this.type = "WifiEntity"
-        this.CoordEntity = null
-        this.WifiEntity = wifiEntity
+        this.key = "WifiEntity"
+        this.data = wifiEntity
     }
 }

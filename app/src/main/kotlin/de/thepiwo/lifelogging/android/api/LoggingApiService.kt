@@ -25,10 +25,10 @@ constructor(@Named("unauthorized") unauthorizedLoggingApi: LoggingApi,
 
     class LoginRequiredException : Exception("Login required")
 
-    lateinit var unauthorizedLoggingApi: LoggingApi
-    lateinit var authorizedLoggingApi: LoggingApi
-    lateinit var authHelper: AuthHelper
-    lateinit var connectivityHelper: ConnectivityHelper
+    var unauthorizedLoggingApi: LoggingApi
+    var authorizedLoggingApi: LoggingApi
+    var authHelper: AuthHelper
+    var connectivityHelper: ConnectivityHelper
 
 
     init {
@@ -65,6 +65,6 @@ constructor(@Named("unauthorized") unauthorizedLoggingApi: LoggingApi,
 
     fun login(loginPassword: LoginPassword): Observable<Token> = failOnErrorResult(unauthorizedLoggingApi.login(loginPassword))
 
-    fun createLogItem(logEntryInsert: LogEntryInsert): Observable<LogEntityReturn> = failOnErrorResult(authorizedLoggingApi.createLogItem(logEntryInsert.type, mapOf("logEntities" to logEntryInsert)))
+    fun createLogItem(logEntryInsert: LogEntryInsert): Observable<LogEntityReturn> = failOnErrorResult(authorizedLoggingApi.createLogItem(logEntryInsert.key, logEntryInsert))
 
 }

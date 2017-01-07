@@ -18,6 +18,8 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
+import okhttp3.logging.HttpLoggingInterceptor
+
 
 @Module
 class ApplicationModule(private val application: BaseApplication) {
@@ -72,24 +74,33 @@ class ApplicationModule(private val application: BaseApplication) {
     @Named("unauthorized")
     @ForApplication
     fun provideUnauthorizedOkHttpClient(cache: Cache): OkHttpClient {
-        return OkHttpClient.Builder().cache(cache).addNetworkInterceptor { chain ->
-            val request = chain.request().newBuilder().addHeader("X-Client", "Android-App").build()
-            chain.proceed(request)
-        }.readTimeout(Constants.HTTP_READ_TIMEOUT, TimeUnit.SECONDS).writeTimeout(Constants.HTTP_WRITE_TIMEOUT, TimeUnit.SECONDS).build()
+        val interceptor = HttpLoggingInterceptor()
+        interceptor.level = HttpLoggingInterceptor.Level.BODY
+
+        return OkHttpClient.Builder().addInterceptor(interceptor).cache(cache)
+                .addNetworkInterceptor { chain ->
+                    val request = chain.request().newBuilder().addHeader("X-Client", "Android-App").build()
+                    chain.proceed(request)
+                }.readTimeout(Constants.HTTP_READ_TIMEOUT, TimeUnit.SECONDS).writeTimeout(Constants.HTTP_WRITE_TIMEOUT, TimeUnit.SECONDS).build()
     }
 
     @Provides
     @Named("authorized")
     @ForApplication
     fun provideAuthorizedOkHttpClient(cache: Cache, authHelper: AuthHelper): OkHttpClient {
-        return OkHttpClient.Builder().cache(cache).addNetworkInterceptor { chain ->
-            val request = chain.request().newBuilder().addHeader("Token",
-                    if (authHelper.getToken() != null)
-                        authHelper.getToken()!!.token
-                    else
-                        "").addHeader("X-Client", "Android-App").build()
-            chain.proceed(request)
-        }.readTimeout(Constants.HTTP_READ_TIMEOUT, TimeUnit.SECONDS).writeTimeout(Constants.HTTP_WRITE_TIMEOUT, TimeUnit.SECONDS).build()
+        val interceptor = HttpLoggingInterceptor()
+        interceptor.level = HttpLoggingInterceptor.Level.BODY
+
+        return OkHttpClient.Builder().addInterceptor(interceptor).cache(cache)
+                .addNetworkInterceptor { chain ->
+                    val request = chain.request().newBuilder().addHeader("Token",
+                            if (authHelper.getToken() != null)
+                                authHelper.getToken()!!.token
+                            else
+                                "").addHeader("X-Client", "Android-App")
+                            .build()
+                    chain.proceed(request)
+                }.readTimeout(Constants.HTTP_READ_TIMEOUT, TimeUnit.SECONDS).writeTimeout(Constants.HTTP_WRITE_TIMEOUT, TimeUnit.SECONDS).build()
     }
 
     @Provides
