@@ -67,6 +67,7 @@ dependencies {
     compile 'io.reactivex:rxandroid:1.2.1'
     compile 'io.reactivex:rxkotlin:0.60.0'
 
+    compile 'com.afollestad.material-dialogs:core:0.9.2.2'
     compile 'com.mcxiaoke.koi:core:0.5.3'
     compile 'com.github.salomonbrys.kotson:kotson:2.3.0'
 

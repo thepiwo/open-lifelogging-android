@@ -76,7 +76,7 @@ constructor(val loggingApiService: LoggingApiService,
 
         if (authHelper.sessionIsAuthorized() && authHelper.getLocationAllowed()) {
             val lm = context.getLocationManager()
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 1, 500f, locationListener)
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 10, 0f, locationListener)
             Log.i("DataHandler", "started location listener")
 
         }

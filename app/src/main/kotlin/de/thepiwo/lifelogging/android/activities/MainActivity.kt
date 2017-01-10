@@ -39,13 +39,16 @@ class MainActivity : BaseActivity() {
 
         verticalLayout {
             padding = dip(30)
+
             textView("Logging started") {
                 textSize = 20f
-                padding = dip(20)
             }
+
             button("logout") {
                 textSize = 16f
                 onClick { logout() }
+            }.lparams(width = matchParent) {
+                topMargin = dip(20)
             }
         }
 

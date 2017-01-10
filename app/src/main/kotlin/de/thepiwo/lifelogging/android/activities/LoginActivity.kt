@@ -4,15 +4,17 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import com.afollestad.materialdialogs.MaterialDialog
 import com.mcxiaoke.koi.ext.newIntent
+import de.thepiwo.lifelogging.android.R
 import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
 import de.thepiwo.lifelogging.android.util.AuthHelper
-import de.thepiwo.lifelogging.android.util.Constants
 import de.thepiwo.lifelogging.android.util.DataHandler
 import org.jetbrains.anko.*
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import javax.inject.Inject
+
 
 class LoginActivity : BaseActivity() {
 
@@ -25,25 +27,29 @@ class LoginActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (authHelper.sessionIsAvailable()) {
+        if (authHelper.sessionIsAvailable() && authHelper.sessionIsAuthorized()) {
             navigator.navigateToMainActivity(this)
             finish()
         }
 
         verticalLayout {
             padding = dip(30)
-            val apiUrl = editText(Constants.API_DEFAULT_URL) {
-                hint = "api url"
+
+            textView("endpoint url (end with /)") { textSize = 16f }
+            val apiUrl = editText(authHelper.getApiUrl()) {
                 textSize = 16f
             }
-            val username = editText {
-                hint = "username"
+
+            textView("username") { textSize = 16f }
+            val username = editText(authHelper.getLoginData()?.login) {
                 textSize = 16f
             }
-            val password = editText {
-                hint = "password"
+
+            textView("password") { textSize = 16f }
+            val password = editText(authHelper.getLoginData()?.password) {
                 textSize = 16f
             }
+
             button("login") {
                 textSize = 16f
                 onClick {
@@ -53,33 +59,61 @@ class LoginActivity : BaseActivity() {
                             password.text.toString()
                     )
                 }
+            }.lparams(width = matchParent) {
+                topMargin = dip(20)
             }
         }
 
     }
 
+    private fun showApiUrlChangedExit() {
+        val dialog = MaterialDialog.Builder(this)
+                .title("ApiUrl changed")
+                .content("The api url differs from the one set, the system has to restart to apply the change.")
+                .positiveText("Restart")
+                .positiveColor(R.color.colorPrimary)
+                .negativeText("Dismiss")
+                .negativeColor(R.color.colorAccent)
+                .autoDismiss(false)
+                .cancelable(false)
+
+        dialog.onPositive({ materialDialog, dialogAction ->
+            navigator.restartApplicationToLogin(this)
+        })
+
+        dialog.onNegative { materialDialog, dialogAction ->
+            materialDialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
     private fun login(apiUrl: String, username: String, password: String) {
         Log.i("LoginActivity", "login button pressed")
+
+        val oldApiUrl = authHelper.getApiUrl()
         authHelper.setApiUrl(apiUrl)
         authHelper.setUsername(username)
         authHelper.setPassword(password)
 
-        dataHandler.login()
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        {
-                            Log.i("LoginActivity", "login successful")
-                            navigator.navigateToMainActivity(this)
-                            finish()
-                        },
-                        { error ->
-                            toast(error.message ?: "login error")
-                        }
-                )
+        if (apiUrl != oldApiUrl) showApiUrlChangedExit() else {
 
-
+            dataHandler.login()
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            {
+                                Log.i("LoginActivity", "login successful")
+                                navigator.navigateToMainActivity(this)
+                                finish()
+                            },
+                            { error ->
+                                toast(error.message ?: "login error")
+                            }
+                    )
+        }
     }
+
 
     companion object {
         fun getCallingIntent(context: Context): Intent = context.newIntent<LoginActivity>()
