@@ -54,7 +54,11 @@ class MainActivity : BaseActivity() {
 
         if (hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
             authHelper.setLocationAllowed(true)
-            dataHandler.startLocationService(this)
+            val startedLocationService = dataHandler.startLocationService(this)
+            if (startedLocationService) toast("Location logging started")
+            else toast("Error starting location logging (${authHelper.sessionIsAuthorized()} ${authHelper.getLocationAllowed()})")
+        } else {
+            toast("Location logging permission not granted")
         }
 
     }

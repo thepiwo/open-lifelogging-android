@@ -70,7 +70,7 @@ constructor(val loggingApiService: LoggingApiService,
         }
     }
 
-    fun startLocationService(context: Context) {
+    fun startLocationService(context: Context): Boolean {
         Log.i("DataHandler", "sessionIsAuthorized ${authHelper.sessionIsAuthorized()}")
         Log.i("DataHandler", "getLocationAllowed ${authHelper.getLocationAllowed()}")
 
@@ -78,7 +78,9 @@ constructor(val loggingApiService: LoggingApiService,
             val lm = context.getLocationManager()
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 10, 0f, locationListener)
             Log.i("DataHandler", "started location listener")
-
+            return true
+        } else {
+            return false
         }
     }
 
