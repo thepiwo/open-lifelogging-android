@@ -55,16 +55,19 @@ constructor(val loggingApiService: LoggingApiService,
 
     private val locationListener = object : LocationListener {
         override fun onProviderDisabled(p0: String?) {
+            Log.i("locationListener", "onProviderDisabled: $p0")
         }
 
         override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
+            Log.i("locationListener", "onStatusChanged: $p0 $p1")
         }
 
         override fun onProviderEnabled(p0: String?) {
+            Log.i("locationListener", "onProviderEnabled: $p0")
         }
 
         override fun onLocationChanged(location: Location) {
-            Log.i("locationListener", "location: $location")
+            Log.i("locationListener", "onLocationChanged: $location")
             val logCoordEntity = CoordEntity(null, null, location.latitude, location.longitude, location.altitude, location.accuracy)
             createLogItem(LogEntryInsert(logCoordEntity))
         }
