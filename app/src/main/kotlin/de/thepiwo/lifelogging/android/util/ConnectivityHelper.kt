@@ -9,11 +9,8 @@ import javax.inject.Inject
 class ConnectivityHelper
 @Inject
 constructor(context: Context) {
-    private val connectivityManager: ConnectivityManager
-
-    init {
-        connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    }
+    private val connectivityManager: ConnectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     fun connected(): Boolean {
         val networkInfo = connectivityManager.activeNetworkInfo

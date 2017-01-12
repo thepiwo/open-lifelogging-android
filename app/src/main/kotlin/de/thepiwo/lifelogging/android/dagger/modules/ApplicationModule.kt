@@ -67,7 +67,7 @@ class ApplicationModule(private val application: BaseApplication) {
     fun provideCache(applicationContext: Context): Cache {
         val cacheSize = Constants.CACHE_SIZE_MB * 1024 * 1024
         val cacheDir = applicationContext.cacheDir
-        return Cache(cacheDir, cacheSize.toLong())
+        return Cache(cacheDir, cacheSize)
     }
 
     @Provides

@@ -3,7 +3,6 @@ package de.thepiwo.lifelogging.android.util
 import android.content.SharedPreferences
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
-import com.mcxiaoke.koi.Const
 import de.thepiwo.lifelogging.android.api.models.LoginPassword
 import de.thepiwo.lifelogging.android.api.models.Token
 import de.thepiwo.lifelogging.android.dagger.ForApplication

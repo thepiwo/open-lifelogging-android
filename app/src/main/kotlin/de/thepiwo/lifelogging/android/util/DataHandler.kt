@@ -9,9 +9,12 @@ import android.net.wifi.WifiInfo
 import android.os.Bundle
 import android.util.Log
 import com.mcxiaoke.koi.ext.getLocationManager
+import com.mcxiaoke.koi.ext.getNotificationManager
+import com.mcxiaoke.koi.ext.newNotification
+import de.thepiwo.lifelogging.android.R
 import de.thepiwo.lifelogging.android.api.LoggingApiService
-import de.thepiwo.lifelogging.android.api.models.logentities.CoordEntity
 import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
+import de.thepiwo.lifelogging.android.api.models.logentities.CoordEntity
 import de.thepiwo.lifelogging.android.api.models.logentities.WifiEntity
 import de.thepiwo.lifelogging.android.dagger.ForApplication
 import rx.Observable
@@ -81,6 +84,7 @@ constructor(val loggingApiService: LoggingApiService,
             val lm = context.getLocationManager()
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 10, 0f, locationListener)
             Log.i("DataHandler", "started location listener")
+            showBasicNotification(context, "started location listener")
             return true
         } else {
             return false
@@ -95,5 +99,16 @@ constructor(val loggingApiService: LoggingApiService,
             val logWifiEntity = WifiEntity(null, null, connectionInfo.ssid, connectionInfo.linkSpeed, connectionInfo.supplicantState.name)
             createLogItem(LogEntryInsert(logWifiEntity))
         }
+    }
+
+    fun showBasicNotification(context: Context, text: String) {
+        val n = context.newNotification {
+            this.setContentTitle("Lifelogging")
+                    .setContentText(text)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setAutoCancel(true).build()
+        }
+
+        context.getNotificationManager().notify(0, n)
     }
 }
