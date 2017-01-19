@@ -1,6 +1,9 @@
 package de.thepiwo.lifelogging.android.util
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -11,6 +14,7 @@ import android.util.Log
 import com.mcxiaoke.koi.ext.getLocationManager
 import com.mcxiaoke.koi.ext.getNotificationManager
 import com.mcxiaoke.koi.ext.newNotification
+import de.thepiwo.lifelogging.android.LocationRequestService
 import de.thepiwo.lifelogging.android.R
 import de.thepiwo.lifelogging.android.api.LoggingApiService
 import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
@@ -20,7 +24,12 @@ import de.thepiwo.lifelogging.android.dagger.ForApplication
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
+import java.util.*
 import javax.inject.Inject
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.common.api.GoogleApiClient
+import java.util.concurrent.TimeUnit
+
 
 @ForApplication
 class DataHandler
@@ -56,35 +65,41 @@ constructor(val loggingApiService: LoggingApiService,
                 )
     }
 
-    private val locationListener = object : LocationListener {
-        override fun onProviderDisabled(p0: String?) {
-            Log.i("locationListener", "onProviderDisabled: $p0")
+    //too hacky...
+    fun getGoogleApiClient(context: Context): GoogleApiClient? {
+        val gApi = GoogleApiClient.Builder(context)
+                .addApi(LocationServices.API)
+                .build()
+        gApi.connect()
+        Log.i("DataHandler", "gApi.isConnected: ${gApi.isConnected}")
+        while (!gApi.isConnected) {
+            Log.i("DataHandler", "gApi.isConnected: ${gApi.isConnected}")
+            Thread.sleep(100)
         }
-
-        override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
-            Log.i("locationListener", "onStatusChanged: $p0 $p1")
-        }
-
-        override fun onProviderEnabled(p0: String?) {
-            Log.i("locationListener", "onProviderEnabled: $p0")
-        }
-
-        override fun onLocationChanged(location: Location) {
-            Log.i("locationListener", "onLocationChanged: $location")
-            val logCoordEntity = CoordEntity(null, null, location.latitude, location.longitude, location.altitude, location.accuracy)
-            createLogItem(LogEntryInsert(logCoordEntity))
-        }
+        return gApi
     }
 
-    fun startLocationService(context: Context): Boolean {
+    fun checkLocationServiceRunning(context: Context) {
+        val serviceIntent = Intent(context, LocationRequestService::class.java)
+        val pIntent = PendingIntent.getService(context, 0, serviceIntent, 0)
+        pIntent.send()
+    }
+
+    fun startLocationServiceObserver(context: Context): Boolean {
         Log.i("DataHandler", "sessionIsAuthorized ${authHelper.sessionIsAuthorized()}")
         Log.i("DataHandler", "getLocationAllowed ${authHelper.getLocationAllowed()}")
 
         if (authHelper.sessionIsAuthorized() && authHelper.getLocationAllowed()) {
-            val lm = context.getLocationManager()
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 10, 0f, locationListener)
-            Log.i("DataHandler", "started location listener")
-            showBasicNotification(context, "started location listener")
+
+            val serviceIntent = Intent(context, LocationRequestService::class.java)
+
+            val pIntent = PendingIntent.getService(context, 0, serviceIntent, 0)
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), TimeUnit.MINUTES.toMillis(60), pIntent)
+            context.startService(serviceIntent)
+
+            Log.i("DataHandler", "started location request service")
+
             return true
         } else {
             return false
@@ -102,6 +117,8 @@ constructor(val loggingApiService: LoggingApiService,
     }
 
     fun showBasicNotification(context: Context, text: String) {
+        Log.i("DataHandler", "showBasicNotification: $text")
+
         val n = context.newNotification {
             this.setContentTitle("Lifelogging")
                     .setContentText(text)
