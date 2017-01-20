@@ -54,6 +54,8 @@
             android:name=".util.WakeLockReceiver"
             android:process=":remote" />
 
+        <receiver android:name=".util.LocationChangedReceiver" />
+
     </application>
 
 </manifest>

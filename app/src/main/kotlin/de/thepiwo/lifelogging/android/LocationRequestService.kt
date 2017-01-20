@@ -2,17 +2,13 @@ package de.thepiwo.lifelogging.android
 
 import android.annotation.TargetApi
 import android.app.IntentService
+import android.app.PendingIntent
 import android.content.Intent
 import android.util.Log
-import com.google.android.gms.location.LocationListener
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
-import de.thepiwo.lifelogging.android.api.models.logentities.CoordEntity
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
+import de.thepiwo.lifelogging.android.util.LocationChangedReceiver
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 
 class LocationRequestService : IntentService("location-request-service") {
@@ -27,7 +23,6 @@ class LocationRequestService : IntentService("location-request-service") {
         super.onCreate()
     }
 
-    var lastLocationUpdate = 0L
 
     @TargetApi(16)
     override fun onHandleIntent(intent: Intent?) {
@@ -39,28 +34,18 @@ class LocationRequestService : IntentService("location-request-service") {
         if (authHelper.sessionIsAuthorized() && authHelper.getLocationAllowed()) {
             Log.i("LocationRequestService", "trying to start location listener")
 
-            if (lastLocationUpdate + TimeUnit.MINUTES.toMillis(30) < System.currentTimeMillis()) {
-                val gApi = dataHandler.getGoogleApiClient(this)
+            val gApi = dataHandler.getGoogleApiClient(this)
 
-                Log.i("LocationRequestService", "location listener maybe running; restarting")
-                LocationServices.FusedLocationApi.removeLocationUpdates(gApi, locationListener)
-                val locationRequest = LocationRequest()
-                        .setInterval(TimeUnit.MINUTES.toMillis(10))
-                        .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
+            Log.i("LocationRequestService", "location listener maybe running; restarting")
+            val locationRequest = LocationRequest()
+                    .setInterval(TimeUnit.MINUTES.toMillis(10))
+                    .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
 
-                LocationServices.FusedLocationApi.requestLocationUpdates(gApi, locationRequest, locationListener)
-                Log.i("LocationRequestService", "started location listener")
-                dataHandler.showBasicNotification(this, "started location listener")
-            } else {
-                Log.i("LocationRequestService", "location listener is apparently running")
-            }
+            val locationIntent = Intent(this, LocationChangedReceiver::class.java)
+            val locationPIntent = PendingIntent.getBroadcast(this, 0, locationIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+
+            LocationServices.FusedLocationApi.requestLocationUpdates(gApi, locationRequest, locationPIntent)
+            Log.i("LocationRequestService", "started location listener")
         }
-    }
-
-    val locationListener = LocationListener { location ->
-        Log.i("LocationListener", "onLocationChanged: $location")
-        lastLocationUpdate = System.currentTimeMillis()
-        val logCoordEntity = CoordEntity(null, null, location.latitude, location.longitude, location.altitude, location.accuracy)
-        dataHandler.createLogItem(LogEntryInsert(logCoordEntity))
     }
 }
