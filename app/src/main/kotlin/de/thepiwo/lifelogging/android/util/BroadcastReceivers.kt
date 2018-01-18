@@ -9,6 +9,7 @@ import com.google.android.gms.location.LocationResult
 import de.thepiwo.lifelogging.android.Application
 import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
 import de.thepiwo.lifelogging.android.api.models.logentities.CoordEntity
+import java.io.File
 import javax.inject.Inject
 
 
@@ -57,12 +58,14 @@ class LocationChangedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         (context.applicationContext as Application).component.inject(this)
 
+        val filePath = File(context.getExternalFilesDir(null), "location-error-log.json")
+
         if (LocationResult.hasResult(intent)) {
             val locations = LocationResult.extractResult(intent).locations
             locations.forEach { location ->
                 Log.i("LocationChangedReceiver", "onLocationChanged: $location")
                 val logCoordEntity = CoordEntity(null, null, location.latitude, location.longitude, location.altitude, location.accuracy)
-                dataHandler.createLogItem(LogEntryInsert(logCoordEntity))
+                dataHandler.createLogItem(LogEntryInsert(logCoordEntity), filePath)
             }
         }
     }

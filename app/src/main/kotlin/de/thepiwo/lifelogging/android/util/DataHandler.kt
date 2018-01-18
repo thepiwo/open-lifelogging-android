@@ -4,31 +4,27 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.net.wifi.SupplicantState
 import android.net.wifi.WifiInfo
-import android.os.Bundle
 import android.util.Log
-import com.mcxiaoke.koi.ext.getLocationManager
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.location.LocationServices
+import com.google.gson.GsonBuilder
 import com.mcxiaoke.koi.ext.getNotificationManager
 import com.mcxiaoke.koi.ext.newNotification
 import de.thepiwo.lifelogging.android.LocationRequestService
 import de.thepiwo.lifelogging.android.R
 import de.thepiwo.lifelogging.android.api.LoggingApiService
 import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
-import de.thepiwo.lifelogging.android.api.models.logentities.CoordEntity
 import de.thepiwo.lifelogging.android.api.models.logentities.WifiEntity
 import de.thepiwo.lifelogging.android.dagger.ForApplication
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
-import java.util.*
-import javax.inject.Inject
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.common.api.GoogleApiClient
+import java.io.File
+import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 
 @ForApplication
@@ -50,7 +46,7 @@ constructor(val loggingApiService: LoggingApiService,
         }
     }
 
-    fun createLogItem(logEntryInsert: LogEntryInsert) {
+    fun createLogItem(logEntryInsert: LogEntryInsert, errorFileLog: File? = null) {
         loggingApiService.createLogItem(logEntryInsert)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -61,6 +57,13 @@ constructor(val loggingApiService: LoggingApiService,
                         { error ->
                             error.printStackTrace()
                             Log.e("DataHandler", "logItem error: ${error.message}")
+                            if (errorFileLog != null) {
+                                FileOutputStream(errorFileLog, true).use { stream ->
+                                    val json = GsonBuilder().create().toJson(logEntryInsert)
+                                    stream.write(json.toByteArray(Charsets.UTF_8))
+                                    Log.i("DataHandler", "write $json in file $errorFileLog")
+                                }
+                            }
                         }
                 )
     }
