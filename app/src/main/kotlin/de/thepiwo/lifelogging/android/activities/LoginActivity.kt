@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import com.afollestad.materialdialogs.MaterialDialog
 import com.mcxiaoke.koi.ext.newIntent
+import com.mcxiaoke.koi.ext.onClick
 import de.thepiwo.lifelogging.android.R
 import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
 import de.thepiwo.lifelogging.android.util.AuthHelper

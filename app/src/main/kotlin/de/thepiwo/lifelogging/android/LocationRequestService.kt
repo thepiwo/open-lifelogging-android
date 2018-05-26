@@ -5,10 +5,13 @@ import android.app.IntentService
 import android.app.PendingIntent
 import android.content.Intent
 import android.util.Log
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
 import de.thepiwo.lifelogging.android.util.LocationChangedReceiver
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 
 class LocationRequestService : IntentService("location-request-service") {

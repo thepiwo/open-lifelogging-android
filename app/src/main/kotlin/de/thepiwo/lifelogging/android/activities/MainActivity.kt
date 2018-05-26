@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import com.mcxiaoke.koi.ext.newIntent
+import com.mcxiaoke.koi.ext.onClick
 import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
