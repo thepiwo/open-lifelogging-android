@@ -28,7 +28,7 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !== PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 ActivityCompat.requestPermissions(
                         this,
@@ -89,6 +89,6 @@ class MainActivity : BaseActivity() {
     }
 
     private fun hasPermission(perm: String): Boolean {
-        return PackageManager.PERMISSION_GRANTED === checkSelfPermission(perm)
+        return PackageManager.PERMISSION_GRANTED == checkSelfPermission(perm)
     }
 }
