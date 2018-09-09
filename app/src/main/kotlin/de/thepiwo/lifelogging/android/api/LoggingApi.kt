@@ -1,12 +1,7 @@
 package de.thepiwo.lifelogging.android.api
 
-import de.thepiwo.lifelogging.android.api.models.LogEntityReturn
-import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
-import de.thepiwo.lifelogging.android.api.models.LoginPassword
-import de.thepiwo.lifelogging.android.api.models.Token
-import retrofit2.http.Body
-import retrofit2.http.POST
-import retrofit2.http.Path
+import de.thepiwo.lifelogging.android.api.models.*
+import retrofit2.http.*
 import rx.Observable
 
 interface LoggingApi {
@@ -21,4 +16,7 @@ interface LoggingApi {
             @Path("key") key: String,
             @Body data: LogEntryInsert
     ): Observable<LogEntityReturn>
+
+    @GET("logs/latest")
+    fun getLogs(@Query("limit") limit: Long): Observable<LogList>
 }

@@ -1,6 +1,7 @@
 package de.thepiwo.lifelogging.android.activities
 
-import android.Manifest.permission.*
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -8,12 +9,17 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat.requestPermissions
 import android.support.v4.app.ActivityCompat.shouldShowRequestPermissionRationale
 import android.support.v4.content.ContextCompat.checkSelfPermission
+import android.widget.ListView
 import com.mcxiaoke.koi.ext.newIntent
 import com.mcxiaoke.koi.ext.onClick
+import de.thepiwo.lifelogging.android.activities.adapters.LogListAdapter
+import de.thepiwo.lifelogging.android.api.LoggingApiService
 import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
 import org.jetbrains.anko.*
+import rx.android.schedulers.AndroidSchedulers
+import rx.schedulers.Schedulers
 import javax.inject.Inject
 
 class MainActivity : BaseActivity() {
@@ -23,6 +29,11 @@ class MainActivity : BaseActivity() {
 
     @Inject
     lateinit var dataHandler: DataHandler
+
+    @Inject
+    lateinit var loggingApiService: LoggingApiService
+
+    lateinit var logList: ListView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,9 +51,28 @@ class MainActivity : BaseActivity() {
             }.lparams(width = matchParent) {
                 topMargin = dip(20)
             }
+
+            logList = listView()
+
         }
 
         checkPermissions()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        loggingApiService.getLogs(100)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        {
+                            logList.adapter = LogListAdapter(it)
+                        },
+                        { error ->
+                            toast(error.message ?: "fetch error")
+                        }
+                )
     }
 
     private fun logout() {

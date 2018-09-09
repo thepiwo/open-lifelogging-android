@@ -17,6 +17,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 
@@ -129,19 +130,33 @@ class ApplicationModule(private val application: BaseApplication) {
     @Named("unauthorized")
     @ForApplication
     fun provideUnauthorizedBalanceApi(@Named("unauthorized") okHttpClient: OkHttpClient, gson: Gson, authHelper: AuthHelper): LoggingApi {
-        return Retrofit.Builder().client(okHttpClient).baseUrl(authHelper.getApiUrl()).addConverterFactory(GsonConverterFactory.create(gson)).addCallAdapterFactory(RxJavaCallAdapterFactory.create()).build().create(LoggingApi::class.java)
+        return Retrofit.Builder()
+                .client(okHttpClient)
+                .baseUrl(authHelper.getApiUrl())
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .build()
+                .create(LoggingApi::class.java)
     }
 
     @Provides
     @Named("authorized")
     @ForApplication
     fun provideAuthorizedBalanceApi(@Named("authorized") okHttpClient: OkHttpClient, gson: Gson, authHelper: AuthHelper): LoggingApi {
-        return Retrofit.Builder().client(okHttpClient).baseUrl(authHelper.getApiUrl()).addConverterFactory(GsonConverterFactory.create(gson)).addCallAdapterFactory(RxJavaCallAdapterFactory.create()).build().create(LoggingApi::class.java)
+        return Retrofit.Builder()
+                .client(okHttpClient)
+                .baseUrl(authHelper.getApiUrl())
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .build()
+                .create(LoggingApi::class.java)
     }
 
     @Provides
     @ForApplication
     fun provideGson(): Gson {
-        return GsonBuilder().create()
+        return GsonBuilder()
+                .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeConverter())
+                .create()
     }
 }

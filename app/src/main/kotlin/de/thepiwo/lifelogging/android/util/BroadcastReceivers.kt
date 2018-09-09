@@ -48,7 +48,7 @@ class LocationChangedReceiver : BroadcastReceiver() {
             val locations = LocationResult.extractResult(intent).locations
             locations.forEach { location ->
                 Log.i("LocationChangedReceiver", "onLocationChanged: $location")
-                val logCoordEntity = CoordEntity(null, null, location.latitude, location.longitude, location.altitude, location.accuracy)
+                val logCoordEntity = CoordEntity(location.latitude, location.longitude, location.altitude, location.accuracy)
                 dataHandler.createLogItem(LogEntryInsert(logCoordEntity), filePath)
             }
         }
