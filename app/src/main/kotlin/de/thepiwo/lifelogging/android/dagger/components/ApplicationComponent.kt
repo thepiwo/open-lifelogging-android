@@ -10,7 +10,6 @@ import de.thepiwo.lifelogging.android.dagger.modules.ApplicationModule
 import de.thepiwo.lifelogging.android.util.BootCompletedReceiver
 import de.thepiwo.lifelogging.android.util.LocationChangedReceiver
 import de.thepiwo.lifelogging.android.util.WakeLockReceiver
-import de.thepiwo.lifelogging.android.util.WifiChangeReceiver
 
 @ForApplication
 @Component(modules = arrayOf(ApplicationModule::class))
@@ -23,8 +22,6 @@ interface ApplicationComponent {
     fun inject(mainActivity: MainActivity)
 
     fun inject(bootCompletedReceiver: BootCompletedReceiver)
-
-    fun inject(wifiChangeReceiver: WifiChangeReceiver)
 
     fun inject(locationRequestService: LocationRequestService)
 

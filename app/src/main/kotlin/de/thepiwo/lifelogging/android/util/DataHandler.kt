@@ -4,11 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.net.wifi.SupplicantState
-import android.net.wifi.WifiInfo
 import android.util.Log
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.location.LocationServices
 import com.google.gson.GsonBuilder
 import com.mcxiaoke.koi.ext.getNotificationManager
 import com.mcxiaoke.koi.ext.newNotification
@@ -16,7 +12,6 @@ import de.thepiwo.lifelogging.android.LocationRequestService
 import de.thepiwo.lifelogging.android.R
 import de.thepiwo.lifelogging.android.api.LoggingApiService
 import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
-import de.thepiwo.lifelogging.android.api.models.logentities.WifiEntity
 import de.thepiwo.lifelogging.android.dagger.ForApplication
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
@@ -92,16 +87,6 @@ constructor(private val loggingApiService: LoggingApiService,
             true
         } else {
             false
-        }
-    }
-
-    fun handleWifiInfo(connectionInfo: WifiInfo) {
-
-        if (connectionInfo.supplicantState == SupplicantState.COMPLETED || connectionInfo.supplicantState == SupplicantState.DISCONNECTED) {
-
-            Log.i("DataHandler", "handleWifiInfo: $connectionInfo")
-            val logWifiEntity = WifiEntity(null, null, connectionInfo.ssid, connectionInfo.linkSpeed, connectionInfo.supplicantState.name)
-            createLogItem(LogEntryInsert(logWifiEntity))
         }
     }
 

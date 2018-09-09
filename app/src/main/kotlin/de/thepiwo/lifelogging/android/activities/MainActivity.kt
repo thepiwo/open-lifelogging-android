@@ -1,7 +1,6 @@
 package de.thepiwo.lifelogging.android.activities
 
-import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.Manifest.permission.*
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
