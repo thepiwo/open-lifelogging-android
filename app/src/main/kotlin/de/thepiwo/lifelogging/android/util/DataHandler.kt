@@ -30,7 +30,7 @@ import javax.inject.Inject
 @ForApplication
 class DataHandler
 @Inject
-constructor(val loggingApiService: LoggingApiService,
+constructor(private val loggingApiService: LoggingApiService,
             val authHelper: AuthHelper) {
 
 
@@ -92,7 +92,7 @@ constructor(val loggingApiService: LoggingApiService,
         Log.i("DataHandler", "sessionIsAuthorized ${authHelper.sessionIsAuthorized()}")
         Log.i("DataHandler", "getLocationAllowed ${authHelper.getLocationAllowed()}")
 
-        if (authHelper.sessionIsAuthorized() && authHelper.getLocationAllowed()) {
+        return if (authHelper.sessionIsAuthorized() && authHelper.getLocationAllowed()) {
 
             val serviceIntent = Intent(context, LocationRequestService::class.java)
 
@@ -103,9 +103,9 @@ constructor(val loggingApiService: LoggingApiService,
 
             Log.i("DataHandler", "started location request service")
 
-            return true
+            true
         } else {
-            return false
+            false
         }
     }
 

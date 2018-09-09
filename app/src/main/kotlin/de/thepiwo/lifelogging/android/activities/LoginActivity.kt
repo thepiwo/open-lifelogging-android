@@ -7,7 +7,6 @@ import android.util.Log
 import com.afollestad.materialdialogs.MaterialDialog
 import com.mcxiaoke.koi.ext.newIntent
 import com.mcxiaoke.koi.ext.onClick
-import de.thepiwo.lifelogging.android.R
 import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
@@ -72,17 +71,15 @@ class LoginActivity : BaseActivity() {
                 .title("ApiUrl changed")
                 .content("The api url differs from the one set, the system has to restart to apply the change.")
                 .positiveText("Restart")
-                .positiveColor(R.color.colorPrimary)
                 .negativeText("Dismiss")
-                .negativeColor(R.color.colorAccent)
                 .autoDismiss(false)
                 .cancelable(false)
 
-        dialog.onPositive({ materialDialog, dialogAction ->
+        dialog.onPositive { _, _ ->
             navigator.restartApplicationToLogin(this)
-        })
+        }
 
-        dialog.onNegative { materialDialog, dialogAction ->
+        dialog.onNegative { materialDialog, _ ->
             materialDialog.dismiss()
         }
 

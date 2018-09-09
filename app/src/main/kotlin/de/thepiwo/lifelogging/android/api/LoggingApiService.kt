@@ -3,7 +3,7 @@ package de.thepiwo.lifelogging.android.api
 import de.thepiwo.lifelogging.android.api.models.*
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.ConnectivityHelper
-import retrofit2.adapter.rxjava.HttpException
+import retrofit2.HttpException
 import rx.Observable
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
@@ -12,10 +12,10 @@ import javax.inject.Named
 
 class LoggingApiService
 @Inject
-constructor(@Named("unauthorized") unauthorizedLoggingApi: LoggingApi,
-            @Named("authorized") authorizedLoggingApi: LoggingApi,
-            authHelper: AuthHelper,
-            connectivityHelper: ConnectivityHelper) {
+constructor(@Named("unauthorized") var unauthorizedLoggingApi: LoggingApi,
+            @Named("authorized") var authorizedLoggingApi: LoggingApi,
+            var authHelper: AuthHelper,
+            private var connectivityHelper: ConnectivityHelper) {
 
     class NoInternetException : Exception("No internet connection available")
 
@@ -24,19 +24,6 @@ constructor(@Named("unauthorized") unauthorizedLoggingApi: LoggingApi,
     class AuthorizationException : Exception("Login failed")
 
     class LoginRequiredException : Exception("Login required")
-
-    var unauthorizedLoggingApi: LoggingApi
-    var authorizedLoggingApi: LoggingApi
-    var authHelper: AuthHelper
-    var connectivityHelper: ConnectivityHelper
-
-
-    init {
-        this.unauthorizedLoggingApi = unauthorizedLoggingApi
-        this.authorizedLoggingApi = authorizedLoggingApi
-        this.authHelper = authHelper
-        this.connectivityHelper = connectivityHelper
-    }
 
     private fun <Any> failOnErrorResult(observable: Observable<Any>): Observable<Any> {
 
@@ -56,11 +43,11 @@ constructor(@Named("unauthorized") unauthorizedLoggingApi: LoggingApi,
             }
 
             Observable.error<Any>(throwable)
-        }.doOnNext({ t ->
+        }.doOnNext { t ->
             if (t is Token) {
                 authHelper.setToken(t)
             }
-        })
+        }
     }
 
     fun login(loginPassword: LoginPassword): Observable<Token> = failOnErrorResult(unauthorizedLoggingApi.login(loginPassword))

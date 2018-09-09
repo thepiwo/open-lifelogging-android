@@ -1,5 +1,6 @@
 package de.thepiwo.lifelogging.android.util
 
+import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
@@ -21,6 +22,7 @@ constructor(val gson: Gson, private val sharedPreferences: SharedPreferences) {
     private var username: String? = null
     private var token: Token? = null
 
+    @SuppressLint("CommitPrefEdits")
     private fun getEditor(): SharedPreferences.Editor {
         if (editor == null) {
             editor = sharedPreferences.edit()
@@ -127,10 +129,10 @@ constructor(val gson: Gson, private val sharedPreferences: SharedPreferences) {
     }
 
     companion object {
-        private val LOCATION_ALLOWED = "auth_helper_location_allowed"
-        private val PASSWORD = "auth_helper_password"
-        private val USERNAME = "auth_helper_username"
-        private val API_URL = "auth_helper_api_url"
-        private val TOKEN = "auth_helper_token"
+        const val LOCATION_ALLOWED = "auth_helper_location_allowed"
+        const val PASSWORD = "auth_helper_password"
+        const val USERNAME = "auth_helper_username"
+        const val API_URL = "auth_helper_api_url"
+        const val TOKEN = "auth_helper_token"
     }
 }

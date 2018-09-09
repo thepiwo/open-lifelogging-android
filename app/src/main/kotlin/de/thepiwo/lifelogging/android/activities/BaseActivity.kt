@@ -23,15 +23,9 @@ open class BaseActivity : AppCompatActivity() {
         this.injectComponent(this.applicationComponent)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
-
-    val applicationComponent: ApplicationComponent
+    private val applicationComponent: ApplicationComponent
         get() = (application as Application).component
 
 
-    open fun injectComponent(component: ApplicationComponent) {
-    }
+    open fun injectComponent(component: ApplicationComponent) {}
 }

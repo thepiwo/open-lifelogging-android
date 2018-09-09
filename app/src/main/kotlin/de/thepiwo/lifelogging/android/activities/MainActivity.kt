@@ -1,19 +1,21 @@
 package de.thepiwo.lifelogging.android.activities
 
-import android.Manifest
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
+import android.support.v4.app.ActivityCompat.requestPermissions
+import android.support.v4.app.ActivityCompat.shouldShowRequestPermissionRationale
+import android.support.v4.content.ContextCompat.checkSelfPermission
 import com.mcxiaoke.koi.ext.newIntent
 import com.mcxiaoke.koi.ext.onClick
 import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
-import javax.inject.Inject
 import org.jetbrains.anko.*
+import javax.inject.Inject
 
 class MainActivity : BaseActivity() {
 
@@ -23,20 +25,8 @@ class MainActivity : BaseActivity() {
     @Inject
     lateinit var dataHandler: DataHandler
 
-    private val MY_PERMISSIONS_ACCESS_FINE_LOCATIONS: Int = 1337
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                ActivityCompat.requestPermissions(
-                        this,
-                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                        MY_PERMISSIONS_ACCESS_FINE_LOCATIONS
-                )
-            }
-        }
 
         verticalLayout {
             padding = dip(30)
@@ -53,25 +43,7 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        if (hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            authHelper.setLocationAllowed(true)
-            val startedLocationService = dataHandler.startLocationServiceObserver(this)
-            if (startedLocationService) toast("Location logging started")
-            else toast("Error starting location logging (${authHelper.sessionIsAuthorized()} ${authHelper.getLocationAllowed()})")
-        } else {
-            toast("Location logging permission not granted")
-        }
-
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            MY_PERMISSIONS_ACCESS_FINE_LOCATIONS -> {
-                authHelper.setLocationAllowed(true)
-                dataHandler.startLocationServiceObserver(this)
-            }
-        }
+        checkPermissions()
     }
 
     private fun logout() {
@@ -80,15 +52,62 @@ class MainActivity : BaseActivity() {
         finish()
     }
 
-    companion object {
-        fun getCallingIntent(context: Context): Intent = context.newIntent<MainActivity>()
-    }
-
     override fun injectComponent(component: ApplicationComponent) {
         component.inject(this)
     }
 
+
+    private fun checkPermissions() {
+        checkLocationPermission()
+        checkStoragePermission()
+
+        startLocationLogging()
+    }
+
+    private fun checkLocationPermission() {
+        if (checkSelfPermission(this, ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
+            if (!shouldShowRequestPermissionRationale(this, ACCESS_FINE_LOCATION)) {
+                requestPermissions(this, arrayOf(ACCESS_FINE_LOCATION), MY_PERMISSIONS_ACCESS_FINE_LOCATION)
+            }
+        }
+    }
+
+    private fun checkStoragePermission() {
+        if (checkSelfPermission(this, WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
+            if (!shouldShowRequestPermissionRationale(this, WRITE_EXTERNAL_STORAGE)) {
+                requestPermissions(this, arrayOf(WRITE_EXTERNAL_STORAGE), MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE)
+            }
+        }
+    }
+
+    private fun startLocationLogging() {
+        if (hasPermission(ACCESS_FINE_LOCATION)) {
+            authHelper.setLocationAllowed(true)
+            val startedLocationService = dataHandler.startLocationServiceObserver(this)
+            if (startedLocationService) toast("Location logging started")
+            else toast("Error starting location logging (${authHelper.sessionIsAuthorized()} ${authHelper.getLocationAllowed()})")
+        } else {
+            toast("Location logging permission not granted")
+        }
+    }
+
     private fun hasPermission(perm: String): Boolean {
-        return PackageManager.PERMISSION_GRANTED == checkSelfPermission(perm)
+        return PERMISSION_GRANTED == checkSelfPermission(perm)
+    }
+
+    companion object {
+        fun getCallingIntent(context: Context): Intent = context.newIntent<MainActivity>()
+        const val MY_PERMISSIONS_ACCESS_FINE_LOCATION: Int = 1337
+        const val MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE: Int = 1338
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            MY_PERMISSIONS_ACCESS_FINE_LOCATION -> {
+                checkStoragePermission()
+                startLocationLogging()
+            }
+        }
     }
 }
