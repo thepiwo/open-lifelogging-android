@@ -68,20 +68,6 @@ constructor(private val loggingApiService: LoggingApiService,
                 )
     }
 
-    //too hacky...
-    fun getGoogleApiClient(context: Context): GoogleApiClient? {
-        val gApi = GoogleApiClient.Builder(context)
-                .addApi(LocationServices.API)
-                .build()
-        gApi.connect()
-        Log.i("DataHandler", "gApi.isConnected: ${gApi.isConnected}")
-        while (!gApi.isConnected) {
-            Log.i("DataHandler", "gApi.isConnected: ${gApi.isConnected}")
-            Thread.sleep(100)
-        }
-        return gApi
-    }
-
     fun checkLocationServiceRunning(context: Context) {
         val serviceIntent = Intent(context, LocationRequestService::class.java)
         val pIntent = PendingIntent.getService(context, 0, serviceIntent, 0)
