@@ -2,13 +2,11 @@ package de.thepiwo.lifelogging.android.activities
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat.requestPermissions
-import android.support.v4.app.ActivityCompat.shouldShowRequestPermissionRationale
-import android.support.v4.content.ContextCompat.checkSelfPermission
 import android.widget.ListView
 import com.mcxiaoke.koi.ext.newIntent
 import com.mcxiaoke.koi.ext.onClick
@@ -17,9 +15,9 @@ import de.thepiwo.lifelogging.android.api.LoggingApiService
 import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import org.jetbrains.anko.*
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import javax.inject.Inject
 
 class MainActivity : BaseActivity() {
@@ -59,6 +57,7 @@ class MainActivity : BaseActivity() {
         checkPermissions()
     }
 
+    @SuppressLint("CheckResult")
     override fun onResume() {
         super.onResume()
 
@@ -94,17 +93,17 @@ class MainActivity : BaseActivity() {
     }
 
     private fun checkLocationPermission() {
-        if (checkSelfPermission(this, ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
-            if (!shouldShowRequestPermissionRationale(this, ACCESS_FINE_LOCATION)) {
-                requestPermissions(this, arrayOf(ACCESS_FINE_LOCATION), MY_PERMISSIONS_ACCESS_FINE_LOCATION)
+        if (checkSelfPermission(ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
+            if (!shouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION)) {
+                requestPermissions(arrayOf(ACCESS_FINE_LOCATION), MY_PERMISSIONS_ACCESS_FINE_LOCATION)
             }
         }
     }
 
     private fun checkStoragePermission() {
-        if (checkSelfPermission(this, WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
-            if (!shouldShowRequestPermissionRationale(this, WRITE_EXTERNAL_STORAGE)) {
-                requestPermissions(this, arrayOf(WRITE_EXTERNAL_STORAGE), MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE)
+        if (checkSelfPermission(WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
+            if (!shouldShowRequestPermissionRationale(WRITE_EXTERNAL_STORAGE)) {
+                requestPermissions(arrayOf(WRITE_EXTERNAL_STORAGE), MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE)
             }
         }
     }

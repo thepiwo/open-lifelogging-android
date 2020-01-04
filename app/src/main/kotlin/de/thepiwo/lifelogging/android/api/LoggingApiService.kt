@@ -3,8 +3,8 @@ package de.thepiwo.lifelogging.android.api
 import de.thepiwo.lifelogging.android.api.models.*
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.ConnectivityHelper
+import io.reactivex.Observable
 import retrofit2.HttpException
-import rx.Observable
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import javax.inject.Inject
@@ -31,7 +31,7 @@ constructor(@Named("unauthorized") var unauthorizedLoggingApi: LoggingApi,
             return Observable.error<Any>(NoInternetException())
         }
 
-        return observable.onErrorResumeNext { throwable ->
+        return observable.onErrorResumeNext { throwable: Throwable ->
             if (throwable is SocketTimeoutException) {
                 Observable.error<Any>(ApiTimeoutException())
             }
@@ -54,6 +54,6 @@ constructor(@Named("unauthorized") var unauthorizedLoggingApi: LoggingApi,
 
     fun createLogItem(logEntryInsert: LogEntryInsert): Observable<LogEntityReturn> = failOnErrorResult(authorizedLoggingApi.createLogItem(logEntryInsert.key, logEntryInsert))
 
-    fun getLogs(limit:Long): Observable<LogList> = failOnErrorResult(authorizedLoggingApi.getLogs(limit))
+    fun getLogs(limit: Long): Observable<LogList> = failOnErrorResult(authorizedLoggingApi.getLogs(limit))
 
 }

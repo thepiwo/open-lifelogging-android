@@ -1,8 +1,8 @@
 package de.thepiwo.lifelogging.android.api
 
 import de.thepiwo.lifelogging.android.api.models.*
+import io.reactivex.Observable
 import retrofit2.http.*
-import rx.Observable
 
 interface LoggingApi {
 

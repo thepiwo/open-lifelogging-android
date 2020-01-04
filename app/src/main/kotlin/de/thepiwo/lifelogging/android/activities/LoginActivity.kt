@@ -1,5 +1,6 @@
 package de.thepiwo.lifelogging.android.activities
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -10,9 +11,9 @@ import com.mcxiaoke.koi.ext.onClick
 import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import org.jetbrains.anko.*
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import javax.inject.Inject
 
 
@@ -67,25 +68,26 @@ class LoginActivity : BaseActivity() {
     }
 
     private fun showApiUrlChangedExit() {
-        val dialog = MaterialDialog.Builder(this)
-                .title("ApiUrl changed")
-                .content("The api url differs from the one set, the system has to restart to apply the change.")
-                .positiveText("Restart")
-                .negativeText("Dismiss")
-                .autoDismiss(false)
+        val dialog = MaterialDialog(this)
+                .title(text = "ApiUrl changed")
+                .message(text = "The api url differs from the one set, the system has to restart to apply the change.")
+                .positiveButton(text = "Restart")
+                .negativeButton(text = "Dismiss")
+                .noAutoDismiss()
                 .cancelable(false)
 
-        dialog.onPositive { _, _ ->
+        dialog.positiveButton {
             navigator.restartApplicationToLogin(this)
         }
 
-        dialog.onNegative { materialDialog, _ ->
+        dialog.negativeButton { materialDialog: MaterialDialog ->
             materialDialog.dismiss()
         }
 
         dialog.show()
     }
 
+    @SuppressLint("CheckResult")
     private fun login(apiUrl: String, username: String, password: String) {
         Log.i("LoginActivity", "login button pressed")
 

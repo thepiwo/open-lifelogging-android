@@ -15,7 +15,7 @@ import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
@@ -134,7 +134,7 @@ class ApplicationModule(private val application: BaseApplication) {
                 .client(okHttpClient)
                 .baseUrl(authHelper.getApiUrl())
                 .addConverterFactory(GsonConverterFactory.create(gson))
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
                 .create(LoggingApi::class.java)
     }
@@ -147,7 +147,7 @@ class ApplicationModule(private val application: BaseApplication) {
                 .client(okHttpClient)
                 .baseUrl(authHelper.getApiUrl())
                 .addConverterFactory(GsonConverterFactory.create(gson))
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
                 .create(LoggingApi::class.java)
     }

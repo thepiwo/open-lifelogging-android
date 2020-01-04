@@ -2,7 +2,7 @@ package de.thepiwo.lifelogging.android.activities
 
 import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import de.thepiwo.lifelogging.android.Application
 import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
 import de.thepiwo.lifelogging.android.util.Navigator

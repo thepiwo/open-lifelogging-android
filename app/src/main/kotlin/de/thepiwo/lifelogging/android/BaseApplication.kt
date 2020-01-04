@@ -1,6 +1,6 @@
 package de.thepiwo.lifelogging.android
 
-import android.support.multidex.MultiDexApplication
+import androidx.multidex.MultiDexApplication
 import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
 import de.thepiwo.lifelogging.android.dagger.components.DaggerApplicationComponent
 import de.thepiwo.lifelogging.android.dagger.modules.ApplicationModule

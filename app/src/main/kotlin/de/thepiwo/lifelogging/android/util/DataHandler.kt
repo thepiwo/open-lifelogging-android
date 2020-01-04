@@ -1,5 +1,6 @@
 package de.thepiwo.lifelogging.android.util
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -13,9 +14,9 @@ import de.thepiwo.lifelogging.android.R
 import de.thepiwo.lifelogging.android.api.LoggingApiService
 import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
 import de.thepiwo.lifelogging.android.dagger.ForApplication
-import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
@@ -41,6 +42,7 @@ constructor(private val loggingApiService: LoggingApiService,
         }
     }
 
+    @SuppressLint("CheckResult")
     fun createLogItem(logEntryInsert: LogEntryInsert, errorFileLog: File? = null) {
         loggingApiService.createLogItem(logEntryInsert)
                 .subscribeOn(Schedulers.newThread())
