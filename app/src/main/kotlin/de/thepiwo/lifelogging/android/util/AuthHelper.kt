@@ -50,7 +50,7 @@ constructor(val gson: Gson, private val sharedPreferences: SharedPreferences) {
     }
 
     fun getApiUrl(): String {
-        this.apiUrl = sharedPreferences.getString(API_URL, Constants.API_DEFAULT_URL)
+        this.apiUrl = sharedPreferences.getString(API_URL, Constants.API_DEFAULT_URL)!!
         return apiUrl
     }
 
