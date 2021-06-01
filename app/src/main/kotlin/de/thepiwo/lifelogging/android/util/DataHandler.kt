@@ -5,6 +5,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import com.google.gson.GsonBuilder
 import com.mcxiaoke.koi.ext.getNotificationManager
@@ -90,6 +91,25 @@ constructor(private val loggingApiService: LoggingApiService,
         } else {
             false
         }
+    }
+
+    fun copyFile(context: Context, uri: Uri): File {
+        val destination = File(context.getExternalFilesDir(null), File(uri.path!!).name)
+
+        context.contentResolver.openInputStream(uri).use { input ->
+            val outputStream = FileOutputStream(destination)
+            outputStream.use { output ->
+                val buffer = ByteArray(4 * 1024) // buffer size
+                while (true) {
+                    val byteCount = input!!.read(buffer)
+                    if (byteCount < 0) break
+                    output.write(buffer, 0, byteCount)
+                }
+                output.flush()
+            }
+        }
+
+        return destination
     }
 
     fun showBasicNotification(context: Context, text: String) {

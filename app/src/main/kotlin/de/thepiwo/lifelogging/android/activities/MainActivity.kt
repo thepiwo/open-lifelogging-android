@@ -1,7 +1,6 @@
 package de.thepiwo.lifelogging.android.activities
 
-import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.Manifest.permission.*
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -50,6 +49,13 @@ class MainActivity : BaseActivity() {
                 topMargin = dip(20)
             }
 
+            button("upload samsung health zip") {
+                textSize = 16f
+                onClick { uploadSamsungHealth() }
+            }.lparams(width = matchParent) {
+                topMargin = dip(20)
+            }
+
             logList = listView()
 
         }
@@ -60,24 +66,39 @@ class MainActivity : BaseActivity() {
     @SuppressLint("CheckResult")
     override fun onResume() {
         super.onResume()
-
-        loggingApiService.getLogs(100)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        {
-                            logList.adapter = LogListAdapter(it)
-                        },
-                        { error ->
-                            toast(error.message ?: "fetch error")
-                        }
-                )
+        getLogs()
     }
+
+    private fun getLogs() =
+        loggingApiService.getLogs(100)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                {
+                    logList.adapter = LogListAdapter(it)
+                },
+                { error ->
+                    toast(error.message ?: "fetch error")
+                }
+            )
 
     private fun logout() {
         authHelper.logout()
         navigator.navigateToLoginActivity(this)
         finish()
+    }
+
+    private fun uploadSamsungHealth() {
+        fun openFile() {
+            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/zip"
+            }
+
+            startActivityForResult(intent, MY_INTENT_PICK_FILE)
+        }
+
+        openFile()
     }
 
     override fun injectComponent(component: ApplicationComponent) {
@@ -93,7 +114,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun checkLocationPermission() {
-        if (checkSelfPermission(ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
+        if (!hasPermission(ACCESS_FINE_LOCATION)) {
             if (!shouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION)) {
                 requestPermissions(arrayOf(ACCESS_FINE_LOCATION), MY_PERMISSIONS_ACCESS_FINE_LOCATION)
             }
@@ -101,9 +122,15 @@ class MainActivity : BaseActivity() {
     }
 
     private fun checkStoragePermission() {
-        if (checkSelfPermission(WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
+        if (!hasPermission(WRITE_EXTERNAL_STORAGE)) {
             if (!shouldShowRequestPermissionRationale(WRITE_EXTERNAL_STORAGE)) {
                 requestPermissions(arrayOf(WRITE_EXTERNAL_STORAGE), MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE)
+            }
+        }
+
+        if (!hasPermission(READ_EXTERNAL_STORAGE)) {
+            if (!shouldShowRequestPermissionRationale(READ_EXTERNAL_STORAGE)) {
+                requestPermissions(arrayOf(READ_EXTERNAL_STORAGE), MY_PERMISSIONS_READ_EXTERNAL_STORAGE)
             }
         }
     }
@@ -127,6 +154,9 @@ class MainActivity : BaseActivity() {
         fun getCallingIntent(context: Context): Intent = context.newIntent<MainActivity>()
         const val MY_PERMISSIONS_ACCESS_FINE_LOCATION: Int = 1337
         const val MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE: Int = 1338
+        const val MY_PERMISSIONS_READ_EXTERNAL_STORAGE: Int = 1339
+
+        const val MY_INTENT_PICK_FILE: Int = 1340
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -138,4 +168,30 @@ class MainActivity : BaseActivity() {
             }
         }
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
+        super.onActivityResult(requestCode, resultCode, resultData)
+        when (requestCode) {
+            MY_INTENT_PICK_FILE -> {
+                resultData?.data?.also { uri ->
+                    val file = dataHandler.copyFile(this, uri)
+
+                    loggingApiService.importSamsung(file)
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                            {
+                                toast("imported $it")
+                                file.delete()
+                                getLogs()
+                            },
+                            { error ->
+                                toast(error.message ?: "fetch error")
+                            }
+                        )
+                }
+            }
+        }
+    }
+
 }

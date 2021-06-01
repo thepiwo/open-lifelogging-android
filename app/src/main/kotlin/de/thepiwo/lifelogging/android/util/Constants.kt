@@ -12,8 +12,8 @@ interface Constants {
         const val CACHE_SIZE_MB: Long = 10
 
         // HTTP Request Timeouts in seconds
-        const val HTTP_READ_TIMEOUT: Long = 15
-        const val HTTP_WRITE_TIMEOUT: Long = 60
+        const val HTTP_READ_TIMEOUT: Long = 120
+        const val HTTP_WRITE_TIMEOUT: Long = 120
 
     }
 }

@@ -4,7 +4,11 @@ import de.thepiwo.lifelogging.android.api.models.*
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.ConnectivityHelper
 import io.reactivex.Observable
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody.Part.Companion.createFormData
+import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.HttpException
+import java.io.File
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import javax.inject.Inject
@@ -55,5 +59,15 @@ constructor(@Named("unauthorized") var unauthorizedLoggingApi: LoggingApi,
     fun createLogItem(logEntryInsert: LogEntryInsert): Observable<LogEntityReturn> = failOnErrorResult(authorizedLoggingApi.createLogItem(logEntryInsert.key, logEntryInsert))
 
     fun getLogs(limit: Long): Observable<LogList> = failOnErrorResult(authorizedLoggingApi.getLogs(limit))
+
+    fun importSamsung(file: File): Observable<Long> {
+        val filePart = createFormData(
+            "zip",
+            file.name,
+            file.asRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+        )
+
+        return failOnErrorResult(authorizedLoggingApi.importSamsung(filePart))
+    }
 
 }
