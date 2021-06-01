@@ -19,7 +19,8 @@ class LogListAdapter(private val logList: LogList) : BaseAdapter() {
 
         return with(parent!!.context) {
             relativeLayout {
-                textView("${logItem.createdAtClientString()}: ${logItem.data.latitude}, ${logItem.data.longitude}")
+                val itemText = if(logItem.key == "CoordEntity") "${logItem.data.latitude}, ${logItem.data.longitude}" else logItem.key
+                textView("${logItem.createdAtClientString()}: $itemText")
                         .onClick { openMap(this.context, logItem) }
             }
         }
