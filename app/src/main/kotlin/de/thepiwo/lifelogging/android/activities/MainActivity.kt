@@ -119,6 +119,12 @@ class MainActivity : BaseActivity() {
                 requestPermissions(arrayOf(ACCESS_FINE_LOCATION), MY_PERMISSIONS_ACCESS_FINE_LOCATION)
             }
         }
+
+        if (!hasPermission(ACCESS_BACKGROUND_LOCATION)) {
+            if (!shouldShowRequestPermissionRationale(ACCESS_BACKGROUND_LOCATION)) {
+                requestPermissions(arrayOf(ACCESS_BACKGROUND_LOCATION), MY_PERMISSIONS_ACCESS_BACKGROUND_LOCATION)
+            }
+        }
     }
 
     private fun checkStoragePermission() {
@@ -155,6 +161,7 @@ class MainActivity : BaseActivity() {
         const val MY_PERMISSIONS_ACCESS_FINE_LOCATION: Int = 1337
         const val MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE: Int = 1338
         const val MY_PERMISSIONS_READ_EXTERNAL_STORAGE: Int = 1339
+        const val MY_PERMISSIONS_ACCESS_BACKGROUND_LOCATION: Int = 1341
 
         const val MY_INTENT_PICK_FILE: Int = 1340
     }
