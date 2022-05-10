@@ -12,13 +12,13 @@ apply plugin: "kotlin-android"
 apply plugin: "kotlin-kapt"
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 32
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "de.thepiwo.lifelogging.android"
         minSdkVersion 26
-        targetSdkVersion 30
+        targetSdkVersion 32
         versionCode 1
         versionName "0.0.1"
         multiDexEnabled  true
@@ -32,9 +32,6 @@ android {
     sourceSets {
         main.java.srcDirs += "src/main/kotlin"
     }
-    lintOptions {
-        abortOnError false
-    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -45,6 +42,10 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    lint {
+        abortOnError false
+    }
+    namespace 'de.thepiwo.lifelogging.android'
 }
 
 repositories {
@@ -56,19 +57,19 @@ repositories {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "com.google.android.gms:play-services-location:18.0.0"
+    implementation "com.google.android.gms:play-services-location:19.0.1"
 
-    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'com.google.android.material:material:1.6.0'
 
     implementation "com.android.support:multidex:2.0.1"
 
     implementation "org.jetbrains.anko:anko-sdk27:0.10.8"
 
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
-    implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2'
+    implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.7'
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"
     implementation "com.squareup.retrofit2:adapter-rxjava2:2.9.0"
-    implementation 'com.google.dagger:dagger:2.40'
+    implementation 'com.google.dagger:dagger:2.42'
 
     implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
     implementation "io.reactivex.rxjava2:rxkotlin:2.4.0"
@@ -77,7 +78,7 @@ dependencies {
     implementation "com.mcxiaoke.koi:core:0.5.5"
     implementation "com.github.salomonbrys.kotson:kotson:2.5.0"
 
-    kapt 'com.google.dagger:dagger-compiler:2.40'
+    kapt 'com.google.dagger:dagger-compiler:2.42'
 }
 
 configurations.all {

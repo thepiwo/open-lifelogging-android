@@ -4,7 +4,7 @@
 apply plugin: "com.github.ben-manes.versions"
 
 buildscript {
-    ext.kotlin_version = "1.5.31"
+    ext.kotlin_version = "1.6.21"
     repositories {
         mavenCentral()
         jcenter()
@@ -16,7 +16,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.3'
+        classpath 'com.android.tools.build:gradle:7.2.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.github.ben-manes:gradle-versions-plugin:0.39.0"
 
