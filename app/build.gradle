@@ -12,13 +12,11 @@ apply plugin: "kotlin-android"
 apply plugin: "kotlin-kapt"
 
 android {
-    compileSdkVersion 32
-    buildToolsVersion "30.0.3"
-
     defaultConfig {
         applicationId "de.thepiwo.lifelogging.android"
-        minSdkVersion 26
-        targetSdkVersion 32
+        minSdk 32
+        targetSdkVersion 34
+        compileSdk 34
         versionCode 1
         versionName "0.0.1"
         multiDexEnabled  true
@@ -57,19 +55,18 @@ repositories {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "com.google.android.gms:play-services-location:19.0.1"
-
-    implementation 'com.google.android.material:material:1.6.0'
-
+    implementation "com.google.android.gms:play-services-location:21.2.0"
+    implementation 'com.google.android.material:material:1.11.0'
     implementation "com.android.support:multidex:2.0.1"
 
     implementation "org.jetbrains.anko:anko-sdk27:0.10.8"
 
-    implementation "com.squareup.retrofit2:retrofit:2.9.0"
-    implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.7'
-    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:2.9.0"
-    implementation 'com.google.dagger:dagger:2.42'
+    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.12'
+    implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.11.0'
+    implementation 'com.google.dagger:dagger:2.51.1'
+    implementation 'com.google.dagger:dagger-android-support:2.51.1'
 
     implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
     implementation "io.reactivex.rxjava2:rxkotlin:2.4.0"
@@ -78,7 +75,8 @@ dependencies {
     implementation "com.mcxiaoke.koi:core:0.5.5"
     implementation "com.github.salomonbrys.kotson:kotson:2.5.0"
 
-    kapt 'com.google.dagger:dagger-compiler:2.42'
+    kapt 'com.google.dagger:dagger-compiler:2.51.1'
+    kapt 'com.google.dagger:dagger-android-processor:2.51.1'
 }
 
 configurations.all {
