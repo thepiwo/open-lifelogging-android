@@ -7,13 +7,14 @@ import android.util.Log
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import dagger.hilt.android.AndroidEntryPoint
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
 import de.thepiwo.lifelogging.android.util.LocationChangedReceiver
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class LocationRequestService : IntentService("location-request-service") {
 
     @Inject
@@ -26,7 +27,6 @@ class LocationRequestService : IntentService("location-request-service") {
 
     override fun onHandleIntent(intent: Intent?) {
 
-        (applicationContext as Application).component.inject(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         Log.i("LocationRequestService", "Service triggered")
@@ -40,7 +40,7 @@ class LocationRequestService : IntentService("location-request-service") {
                     .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
 
             val locationIntent = Intent(this, LocationChangedReceiver::class.java)
-            val locationPIntent = PendingIntent.getBroadcast(this, 0, locationIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+            val locationPIntent = PendingIntent.getBroadcast(this, 0, locationIntent, PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
             try {
                 fusedLocationClient.requestLocationUpdates(locationRequest, locationPIntent)

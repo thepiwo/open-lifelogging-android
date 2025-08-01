@@ -6,9 +6,9 @@ import android.content.Context
 import android.content.Intent
 import de.thepiwo.lifelogging.android.activities.LoginActivity
 import de.thepiwo.lifelogging.android.activities.MainActivity
-import de.thepiwo.lifelogging.android.dagger.ForApplication
+import javax.inject.Singleton
 
-@ForApplication
+@Singleton
 class Navigator {
     fun navigateToLoginActivity(context: Context?) {
         if (context != null) {
@@ -29,7 +29,7 @@ class Navigator {
     fun restartApplicationToLogin(context: Context?) {
         if (context != null) {
             val startActivity = Intent(context, LoginActivity::class.java)
-            val pendingIntent = PendingIntent.getActivity(context, 0, startActivity, PendingIntent.FLAG_CANCEL_CURRENT)
+            val pendingIntent = PendingIntent.getActivity(context, 0, startActivity, PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
                     .set(AlarmManager.RTC, System.currentTimeMillis() + 100, pendingIntent)
 

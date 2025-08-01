@@ -6,11 +6,17 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
-import de.thepiwo.lifelogging.android.BaseApplication
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import de.thepiwo.lifelogging.android.api.LoggingApi
 import de.thepiwo.lifelogging.android.api.LoggingApiService
-import de.thepiwo.lifelogging.android.dagger.ForApplication
-import de.thepiwo.lifelogging.android.util.*
+import de.thepiwo.lifelogging.android.util.AuthHelper
+import de.thepiwo.lifelogging.android.util.ConnectivityHelper
+import de.thepiwo.lifelogging.android.util.Constants
+import de.thepiwo.lifelogging.android.util.DataHandler
+import de.thepiwo.lifelogging.android.util.LocalDateTimeConverter
+import de.thepiwo.lifelogging.android.util.Navigator
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -23,49 +29,37 @@ import javax.inject.Named
 
 
 @Module
-class ApplicationModule(private val application: BaseApplication) {
-
-
-    @Provides
-    @ForApplication
-    fun provideApplicationContext(): Context {
-        return application
-    }
+@InstallIn(SingletonComponent::class)
+object ApplicationModule {
 
     @Provides
-    @ForApplication
     fun provideNavigator(): Navigator {
         return Navigator()
     }
 
     @Provides
-    @ForApplication
-    fun provideSharedPreferences(applicationContext: Context): SharedPreferences {
+    fun provideSharedPreferences(@ApplicationContext applicationContext: Context): SharedPreferences {
         return applicationContext.getSharedPreferences(Constants.APP_NAME, Context.MODE_PRIVATE)
     }
 
     // -------- COMMUNICATION: Cache, Retrofit, OkHttp, API --------
     @Provides
-    @ForApplication
     fun provideAuthHelper(gson: Gson, sharedPreferences: SharedPreferences): AuthHelper {
         return AuthHelper(gson, sharedPreferences)
     }
 
     @Provides
-    @ForApplication
     fun provideDataHandler(loggingApiService: LoggingApiService, authHelper: AuthHelper): DataHandler {
         return DataHandler(loggingApiService, authHelper)
     }
 
     @Provides
-    @ForApplication
-    fun provideConnectivityHelper(applicationContext: Context): ConnectivityHelper {
+    fun provideConnectivityHelper(@ApplicationContext applicationContext: Context): ConnectivityHelper {
         return ConnectivityHelper(applicationContext)
     }
 
     @Provides
-    @ForApplication
-    fun provideCache(applicationContext: Context): Cache {
+    fun provideCache(@ApplicationContext applicationContext: Context): Cache {
         val cacheSize = Constants.CACHE_SIZE_MB * 1024 * 1024
         val cacheDir = applicationContext.cacheDir
         return Cache(cacheDir, cacheSize)
@@ -73,7 +67,6 @@ class ApplicationModule(private val application: BaseApplication) {
 
     @Provides
     @Named("unauthorized")
-    @ForApplication
     fun provideUnauthorizedOkHttpClient(cache: Cache): OkHttpClient {
         val interceptor = HttpLoggingInterceptor()
         interceptor.level = HttpLoggingInterceptor.Level.BODY
@@ -90,8 +83,7 @@ class ApplicationModule(private val application: BaseApplication) {
 
     @Provides
     @Named("authorized")
-    @ForApplication
-    fun provideAuthorizedOkHttpClient(cache: Cache, authHelper: AuthHelper, applicationContext: Context): OkHttpClient {
+    fun provideAuthorizedOkHttpClient(cache: Cache, authHelper: AuthHelper, @ApplicationContext applicationContext: Context): OkHttpClient {
         val interceptor = HttpLoggingInterceptor()
         interceptor.level = HttpLoggingInterceptor.Level.BODY
 
@@ -128,7 +120,6 @@ class ApplicationModule(private val application: BaseApplication) {
 
     @Provides
     @Named("unauthorized")
-    @ForApplication
     fun provideUnauthorizedBalanceApi(@Named("unauthorized") okHttpClient: OkHttpClient, gson: Gson, authHelper: AuthHelper): LoggingApi {
         return Retrofit.Builder()
                 .client(okHttpClient)
@@ -141,7 +132,6 @@ class ApplicationModule(private val application: BaseApplication) {
 
     @Provides
     @Named("authorized")
-    @ForApplication
     fun provideAuthorizedBalanceApi(@Named("authorized") okHttpClient: OkHttpClient, gson: Gson, authHelper: AuthHelper): LoggingApi {
         return Retrofit.Builder()
                 .client(okHttpClient)
@@ -153,7 +143,16 @@ class ApplicationModule(private val application: BaseApplication) {
     }
 
     @Provides
-    @ForApplication
+    fun provideLoggingApiService(
+        @Named("unauthorized") unauthorizedLoggingApi: LoggingApi,
+        @Named("authorized") authorizedLoggingApi: LoggingApi,
+        authHelper: AuthHelper,
+        connectivityHelper: ConnectivityHelper
+    ): LoggingApiService {
+        return LoggingApiService(unauthorizedLoggingApi, authorizedLoggingApi, authHelper, connectivityHelper)
+    }
+
+    @Provides
     fun provideGson(): Gson {
         return GsonBuilder()
                 .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeConverter())

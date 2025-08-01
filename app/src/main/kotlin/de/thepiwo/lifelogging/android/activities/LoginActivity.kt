@@ -13,9 +13,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.afollestad.materialdialogs.MaterialDialog
 import com.mcxiaoke.koi.ext.newIntent
-import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
+import dagger.hilt.android.AndroidEntryPoint
 import de.thepiwo.lifelogging.android.ui.theme.LifeloggingTheme
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
@@ -35,7 +35,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class LoginActivity : BaseActivity() {
 
     @Inject
@@ -180,8 +180,5 @@ class LoginActivity : BaseActivity() {
         fun getCallingIntent(context: Context): Intent = context.newIntent<LoginActivity>()
     }
 
-    override fun injectComponent(component: ApplicationComponent) {
-        component.inject(this)
-    }
 
 }

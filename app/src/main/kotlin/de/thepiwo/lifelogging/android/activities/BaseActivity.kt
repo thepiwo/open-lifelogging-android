@@ -3,11 +3,11 @@ package de.thepiwo.lifelogging.android.activities
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import de.thepiwo.lifelogging.android.Application
-import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
+import dagger.hilt.android.AndroidEntryPoint
 import de.thepiwo.lifelogging.android.util.Navigator
 import javax.inject.Inject
 
+@AndroidEntryPoint
 open class BaseActivity : AppCompatActivity() {
 
     @Inject
@@ -18,14 +18,5 @@ open class BaseActivity : AppCompatActivity() {
 
         // disable landscape mode
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-
-        this.applicationComponent.inject(this)
-        this.injectComponent(this.applicationComponent)
     }
-
-    private val applicationComponent: ApplicationComponent
-        get() = (application as Application).component
-
-
-    open fun injectComponent(component: ApplicationComponent) {}
 }

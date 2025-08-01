@@ -1,7 +1,7 @@
 package de.thepiwo.lifelogging.android.ui.theme
 
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.lightColors
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
@@ -10,11 +10,10 @@ private val YellowGreen = Color(0xFFAFA72E)
 private val DarkYellow = Color(0xFFAF972E)
 private val Purple = Color(0xFF4E2676)
 
-private val LightColorPalette = lightColors(
+private val LightColorScheme = lightColorScheme(
     primary = YellowGreen,
-    primaryVariant = DarkYellow,
     secondary = Purple,
-    secondaryVariant = Purple
+    tertiary = DarkYellow
 )
 
 @Composable
@@ -22,7 +21,7 @@ fun LifeloggingTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colors = LightColorPalette,
+        colorScheme = LightColorScheme,
         content = content
     )
 }

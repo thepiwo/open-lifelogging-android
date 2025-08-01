@@ -14,7 +14,6 @@ import de.thepiwo.lifelogging.android.LocationRequestService
 import de.thepiwo.lifelogging.android.R
 import de.thepiwo.lifelogging.android.api.LoggingApiService
 import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
-import de.thepiwo.lifelogging.android.dagger.ForApplication
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -22,9 +21,10 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Singleton
 
 
-@ForApplication
+@Singleton
 class DataHandler
 @Inject
 constructor(private val loggingApiService: LoggingApiService,
@@ -68,7 +68,7 @@ constructor(private val loggingApiService: LoggingApiService,
 
     fun checkLocationServiceRunning(context: Context) {
         val serviceIntent = Intent(context, LocationRequestService::class.java)
-        val pIntent = PendingIntent.getService(context, 0, serviceIntent, 0)
+        val pIntent = PendingIntent.getService(context, 0, serviceIntent, PendingIntent.FLAG_IMMUTABLE)
         pIntent.send()
     }
 
@@ -80,7 +80,7 @@ constructor(private val loggingApiService: LoggingApiService,
 
             val serviceIntent = Intent(context, LocationRequestService::class.java)
 
-            val pIntent = PendingIntent.getService(context, 0, serviceIntent, 0)
+            val pIntent = PendingIntent.getService(context, 0, serviceIntent, PendingIntent.FLAG_IMMUTABLE)
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), TimeUnit.MINUTES.toMillis(60), pIntent)
             context.startService(serviceIntent)

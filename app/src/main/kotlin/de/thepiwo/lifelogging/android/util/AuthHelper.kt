@@ -6,10 +6,10 @@ import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
 import de.thepiwo.lifelogging.android.api.models.LoginPassword
 import de.thepiwo.lifelogging.android.api.models.Token
-import de.thepiwo.lifelogging.android.dagger.ForApplication
 import javax.inject.Inject
+import javax.inject.Singleton
 
-@ForApplication
+@Singleton
 class AuthHelper
 @Inject
 constructor(val gson: Gson, private val sharedPreferences: SharedPreferences) {

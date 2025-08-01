@@ -2,10 +2,10 @@ package de.thepiwo.lifelogging.android.util
 
 import android.content.Context
 import android.net.ConnectivityManager
-import de.thepiwo.lifelogging.android.dagger.ForApplication
 import javax.inject.Inject
+import javax.inject.Singleton
 
-@ForApplication
+@Singleton
 class ConnectivityHelper
 @Inject
 constructor(context: Context) {

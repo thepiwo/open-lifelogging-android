@@ -19,9 +19,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
-import androidx.compose.material.Card
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
@@ -29,10 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.MutableLiveData
 import com.mcxiaoke.koi.ext.newIntent
+import dagger.hilt.android.AndroidEntryPoint
 import de.thepiwo.lifelogging.android.api.LoggingApiService
 import de.thepiwo.lifelogging.android.api.models.LogEntityReturn
 import de.thepiwo.lifelogging.android.api.models.LogList
-import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
 import de.thepiwo.lifelogging.android.ui.theme.LifeloggingTheme
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
@@ -40,6 +40,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : BaseActivity() {
 
     @Inject
@@ -111,8 +112,7 @@ class MainActivity : BaseActivity() {
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            elevation = 4.dp
+                                .padding(vertical = 4.dp)
                         ) {
                             val itemText = if(logItem.key == "CoordEntity") 
                                 "${logItem.data.latitude}, ${logItem.data.longitude}" 
@@ -178,9 +178,6 @@ class MainActivity : BaseActivity() {
         openFile()
     }
 
-    override fun injectComponent(component: ApplicationComponent) {
-        component.inject(this)
-    }
 
 
     private fun checkPermissions() {

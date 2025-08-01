@@ -1,94 +1,95 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.google.devtools.ksp'
+    id 'org.jetbrains.kotlin.plugin.compose'
+    id 'dagger.hilt.android.plugin'
 }
 
-apply plugin: "com.android.application"
-apply plugin: "kotlin-android"
-apply plugin: "kotlin-kapt"
-
 android {
+    namespace 'de.thepiwo.lifelogging.android'
+    compileSdkVersion 36
+    
     defaultConfig {
         applicationId "de.thepiwo.lifelogging.android"
         minSdk 32
-        targetSdkVersion 35
-        compileSdk 35
+        targetSdk 36
         versionCode 1
         versionName "0.0.1"
-        multiDexEnabled  true
+        
+        vectorDrawables {
+            useSupportLibrary true
+        }
     }
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
-    sourceSets {
-        main.java.srcDirs += "src/main/kotlin"
-    }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = '1.8'
+    kotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_17
+        }
     }
+
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
+        kotlinCompilerExtensionVersion = "1.8.3"
     }
-    lint {
-        abortOnError false
-    }
-    namespace 'de.thepiwo.lifelogging.android'
 }
 
-repositories {
-    mavenCentral()
-    maven {
-        url "https://oss.sonatype.org/content/repositories/snapshots"
-    }
-}
 
 dependencies {
-    implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "com.google.android.gms:play-services-location:21.2.0"
-    implementation 'com.google.android.material:material:1.11.0'
-    implementation "com.android.support:multidex:2.0.1"
+    // Core Android
     implementation 'androidx.core:core-ktx:1.16.0'
-
-    // Jetpack Compose
-    def compose_version = "1.6.3"
-    implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.material:material:$compose_version"
-    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation "androidx.activity:activity-compose:1.8.2"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0"
-    implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
-    implementation "androidx.compose.material:material-icons-extended:$compose_version"
-    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
-
-    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
-    implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.12'
-    implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.11.0'
-    implementation 'com.google.dagger:dagger:2.51.1'
-    implementation 'com.google.dagger:dagger-android-support:2.51.1'
-
-    implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
-    implementation "io.reactivex.rxjava2:rxkotlin:2.4.0"
-
-    implementation "com.afollestad.material-dialogs:core:3.3.0"
-    implementation "com.mcxiaoke.koi:core:0.5.5"
-    implementation "com.github.salomonbrys.kotson:kotson:2.5.0"
-
-    kapt 'com.google.dagger:dagger-compiler:2.51.1'
-    kapt 'com.google.dagger:dagger-android-processor:2.51.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.9.2'
+    implementation 'androidx.activity:activity-compose:1.10.1'
+    
+    // Jetpack Compose BOM
+    implementation platform('androidx.compose:compose-bom:2025.07.00')
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.compose.material:material-icons-extended'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.9.2'
+    implementation 'androidx.compose.runtime:runtime-livedata'
+    
+    // Google Services
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    
+    // Networking
+    implementation 'com.squareup.retrofit2:retrofit:3.0.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:5.1.0'
+    implementation 'com.squareup.retrofit2:converter-gson:3.0.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:3.0.0'
+    
+    // Dependency Injection
+    implementation 'com.google.dagger:hilt-android:2.57'
+    ksp 'com.google.dagger:hilt-compiler:2.57'
+    
+    // Reactive Programming
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation 'io.reactivex.rxjava2:rxkotlin:2.4.0'
+    
+    // UI Components
+    implementation 'com.afollestad.material-dialogs:core:3.3.0'
+    implementation 'com.mcxiaoke.koi:core:0.5.5'
+    implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
+    
+    // Debug
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
 }
 
-configurations.all {
+configurations.configureEach {
     exclude group: "com.android.support", module: "support-v13"
 }
