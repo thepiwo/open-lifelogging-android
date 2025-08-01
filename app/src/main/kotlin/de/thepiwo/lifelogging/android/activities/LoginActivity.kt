@@ -5,15 +5,34 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.afollestad.materialdialogs.MaterialDialog
 import com.mcxiaoke.koi.ext.newIntent
-import com.mcxiaoke.koi.ext.onClick
 import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
+import de.thepiwo.lifelogging.android.ui.theme.LifeloggingTheme
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import org.jetbrains.anko.*
 import javax.inject.Inject
 
 
@@ -33,38 +52,80 @@ class LoginActivity : BaseActivity() {
             finish()
         }
 
-        verticalLayout {
-            padding = dip(30)
-
-            textView("endpoint url (end with /)") { textSize = 16f }
-            val apiUrl = editText(authHelper.getApiUrl()) {
-                textSize = 16f
-            }
-
-            textView("username") { textSize = 16f }
-            val username = editText(authHelper.getLoginData()?.login) {
-                textSize = 16f
-            }
-
-            textView("password") { textSize = 16f }
-            val password = editText(authHelper.getLoginData()?.password) {
-                textSize = 16f
-            }
-
-            button("login") {
-                textSize = 16f
-                onClick {
-                    login(
-                            apiUrl.text.toString(),
-                            username.text.toString(),
-                            password.text.toString()
-                    )
-                }
-            }.lparams(width = matchParent) {
-                topMargin = dip(20)
+        setContent {
+            LifeloggingTheme {
+                LoginScreen(
+                    initialApiUrl = authHelper.getApiUrl(),
+                    initialUsername = authHelper.getLoginData()?.login ?: "",
+                    initialPassword = authHelper.getLoginData()?.password ?: "",
+                    onLoginClick = { apiUrl, username, password ->
+                        login(apiUrl, username, password)
+                    }
+                )
             }
         }
+    }
 
+    @Composable
+    fun LoginScreen(
+        initialApiUrl: String,
+        initialUsername: String,
+        initialPassword: String,
+        onLoginClick: (String, String, String) -> Unit
+    ) {
+        var apiUrl by remember { mutableStateOf(initialApiUrl) }
+        var username by remember { mutableStateOf(initialUsername) }
+        var password by remember { mutableStateOf(initialPassword) }
+        
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(30.dp)
+        ) {
+            Text(
+                text = "endpoint url (end with /)",
+                fontSize = 16.sp
+            )
+            TextField(
+                value = apiUrl,
+                onValueChange = { apiUrl = it },
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "username",
+                fontSize = 16.sp
+            )
+            TextField(
+                value = username,
+                onValueChange = { username = it },
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "password",
+                fontSize = 16.sp
+            )
+            TextField(
+                value = password,
+                onValueChange = { password = it },
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            Button(
+                onClick = { onLoginClick(apiUrl, username, password) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("login", fontSize = 16.sp)
+            }
+        }
     }
 
     private fun showApiUrlChangedExit() {
@@ -108,7 +169,7 @@ class LoginActivity : BaseActivity() {
                                 finish()
                             },
                             { error ->
-                                toast(error.message ?: "login error")
+                                Toast.makeText(this, error.message ?: "login error", Toast.LENGTH_SHORT).show()
                             }
                     )
         }

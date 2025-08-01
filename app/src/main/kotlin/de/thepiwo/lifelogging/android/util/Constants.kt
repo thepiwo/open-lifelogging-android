@@ -6,7 +6,7 @@ interface Constants {
         // Strings
         const val APP_NAME = "Open Lifelogging"
 
-        const val API_DEFAULT_URL = "http://192.168.178.39:9001/v1/"
+        const val API_DEFAULT_URL = "http://10.0.42.12:9001/v1/"
 
         // Cache size in MB
         const val CACHE_SIZE_MB: Long = 10

@@ -1,22 +1,43 @@
 package de.thepiwo.lifelogging.android.activities
 
-import android.Manifest.permission.*
+import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
-import android.widget.ListView
+import android.widget.Toast
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
+import androidx.compose.material.Card
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.MutableLiveData
 import com.mcxiaoke.koi.ext.newIntent
-import com.mcxiaoke.koi.ext.onClick
-import de.thepiwo.lifelogging.android.activities.adapters.LogListAdapter
 import de.thepiwo.lifelogging.android.api.LoggingApiService
+import de.thepiwo.lifelogging.android.api.models.LogEntityReturn
+import de.thepiwo.lifelogging.android.api.models.LogList
 import de.thepiwo.lifelogging.android.dagger.components.ApplicationComponent
+import de.thepiwo.lifelogging.android.ui.theme.LifeloggingTheme
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.DataHandler
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import org.jetbrains.anko.*
 import javax.inject.Inject
 
 class MainActivity : BaseActivity() {
@@ -30,37 +51,93 @@ class MainActivity : BaseActivity() {
     @Inject
     lateinit var loggingApiService: LoggingApiService
 
-    lateinit var logList: ListView
+    private val logsLiveData = MutableLiveData<LogList>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        verticalLayout {
-            padding = dip(30)
-
-            textView("Logging started") {
-                textSize = 20f
+        setContent {
+            LifeloggingTheme {
+                MainScreen(
+                    logs = logsLiveData.observeAsState().value,
+                    onLogoutClick = { logout() },
+                    onUploadClick = { uploadSamsungHealth() }
+                )
             }
-
-            button("logout") {
-                textSize = 16f
-                onClick { logout() }
-            }.lparams(width = matchParent) {
-                topMargin = dip(20)
-            }
-
-            button("upload samsung health zip") {
-                textSize = 16f
-                onClick { uploadSamsungHealth() }
-            }.lparams(width = matchParent) {
-                topMargin = dip(20)
-            }
-
-            logList = listView()
-
         }
 
         checkPermissions()
+    }
+    
+    @Composable
+    fun MainScreen(
+        logs: LogList?,
+        onLogoutClick: () -> Unit,
+        onUploadClick: () -> Unit
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(30.dp)
+        ) {
+            Text(
+                text = "Logging started",
+                fontSize = 20.sp
+            )
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            Button(
+                onClick = onLogoutClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("logout", fontSize = 16.sp)
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            Button(
+                onClick = onUploadClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("upload samsung health zip", fontSize = 16.sp)
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            logs?.let { logList ->
+                LazyColumn {
+                    items(logList.logs) { logItem ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            elevation = 4.dp
+                        ) {
+                            val itemText = if(logItem.key == "CoordEntity") 
+                                "${logItem.data.latitude}, ${logItem.data.longitude}" 
+                            else 
+                                logItem.key
+                                
+                            Text(
+                                text = "${logItem.createdAtClientString()}: $itemText",
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth()
+                            )
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private fun openMap(context: Context, logItem: LogEntityReturn) {
+        val uri = "geo:${logItem.data.latitude},${logItem.data.longitude}?q=${logItem.data.latitude},${logItem.data.longitude}(Location+${logItem.createdAtClientString()})"
+        val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(uri))
+        context.startActivity(intent)
     }
 
     @SuppressLint("CheckResult")
@@ -75,10 +152,10 @@ class MainActivity : BaseActivity() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 {
-                    logList.adapter = LogListAdapter(it)
+                    logsLiveData.value = it
                 },
                 { error ->
-                    toast(error.message ?: "fetch error")
+                    Toast.makeText(this, error.message ?: "fetch error", Toast.LENGTH_SHORT).show()
                 }
             )
 
@@ -145,10 +222,10 @@ class MainActivity : BaseActivity() {
         if (hasPermission(ACCESS_FINE_LOCATION)) {
             authHelper.setLocationAllowed(true)
             val startedLocationService = dataHandler.startLocationServiceObserver(this)
-            if (startedLocationService) toast("Location logging started")
-            else toast("Error starting location logging (${authHelper.sessionIsAuthorized()} ${authHelper.getLocationAllowed()})")
+            if (startedLocationService) Toast.makeText(this, "Location logging started", Toast.LENGTH_SHORT).show()
+            else Toast.makeText(this, "Error starting location logging (${authHelper.sessionIsAuthorized()} ${authHelper.getLocationAllowed()})", Toast.LENGTH_SHORT).show()
         } else {
-            toast("Location logging permission not granted")
+            Toast.makeText(this, "Location logging permission not granted", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -188,12 +265,12 @@ class MainActivity : BaseActivity() {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                             {
-                                toast("imported $it")
+                                Toast.makeText(this, "imported $it", Toast.LENGTH_SHORT).show()
                                 file.delete()
                                 getLogs()
                             },
                             { error ->
-                                toast(error.message ?: "fetch error")
+                                Toast.makeText(this, error.message ?: "fetch error", Toast.LENGTH_SHORT).show()
                             }
                         )
                 }

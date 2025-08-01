@@ -45,8 +45,8 @@ class LocationChangedReceiver : BroadcastReceiver() {
         val filePath = File(context.getExternalFilesDir(null), "location-error-log.json")
 
         if (LocationResult.hasResult(intent)) {
-            val locations = LocationResult.extractResult(intent).locations
-            locations.forEach { location ->
+            val locations = LocationResult.extractResult(intent)?.locations
+            locations?.forEach { location ->
                 Log.i("LocationChangedReceiver", "onLocationChanged: $location")
                 val logCoordEntity = CoordEntity(location.latitude, location.longitude, location.altitude, location.accuracy)
                 dataHandler.createLogItem(LogEntryInsert(logCoordEntity), filePath)
