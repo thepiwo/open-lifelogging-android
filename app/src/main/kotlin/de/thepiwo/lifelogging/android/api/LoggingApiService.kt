@@ -64,6 +64,8 @@ constructor(@Named("unauthorized") var unauthorizedLoggingApi: LoggingApi,
 
     fun getLogs(limit: Long): Observable<LogList> = failOnErrorResult(authorizedLoggingApi.getLogs(limit))
 
+    fun getLogsByDateRange(fromDate: String, toDate: String): Observable<LogList> = failOnErrorResult(authorizedLoggingApi.getLogsByDateRange(fromDate, toDate))
+
     fun importSamsung(file: File): Observable<Long> {
         val filePart = createFormData(
             "zip",

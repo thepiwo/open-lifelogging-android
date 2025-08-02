@@ -29,6 +29,12 @@ interface LoggingApi {
     @GET("logs/latest")
     fun getLogs(@Query("limit") limit: Long): Observable<LogList>
 
+    @GET("logs")
+    fun getLogsByDateRange(
+        @Query("date") fromDate: String,
+        @Query("toDate") toDate: String
+    ): Observable<LogList>
+
     @Multipart
     @POST("import/samsung")
     fun importSamsung(@Part filePart: MultipartBody.Part): Observable<Long>
