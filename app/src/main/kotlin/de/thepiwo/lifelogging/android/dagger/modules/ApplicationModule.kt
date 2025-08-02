@@ -69,7 +69,7 @@ object ApplicationModule {
     @Named("unauthorized")
     fun provideUnauthorizedOkHttpClient(cache: Cache): OkHttpClient {
         val interceptor = HttpLoggingInterceptor()
-        interceptor.level = HttpLoggingInterceptor.Level.BODY
+        interceptor.level = HttpLoggingInterceptor.Level.BASIC
 
         return OkHttpClient.Builder().addInterceptor(interceptor).cache(cache)
                 .addNetworkInterceptor { chain ->
@@ -85,7 +85,7 @@ object ApplicationModule {
     @Named("authorized")
     fun provideAuthorizedOkHttpClient(cache: Cache, authHelper: AuthHelper, @ApplicationContext applicationContext: Context): OkHttpClient {
         val interceptor = HttpLoggingInterceptor()
-        interceptor.level = HttpLoggingInterceptor.Level.BODY
+        interceptor.level = HttpLoggingInterceptor.Level.BASIC
 
         return OkHttpClient.Builder()
                 .addInterceptor(interceptor)

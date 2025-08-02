@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -232,13 +233,30 @@ class MainActivity : BaseActivity() {
     }
 
     private fun startLocationLogging() {
-        if (hasPermission(ACCESS_FINE_LOCATION)) {
+        val hasFineLocation = hasPermission(ACCESS_FINE_LOCATION)
+        val hasBackgroundLocation = hasPermission(ACCESS_BACKGROUND_LOCATION)
+        
+        Log.i("MainActivity", "Location permissions - Fine: $hasFineLocation, Background: $hasBackgroundLocation")
+        
+        if (hasFineLocation && hasBackgroundLocation) {
             authHelper.setLocationAllowed(true)
             val startedLocationService = dataHandler.startLocationServiceObserver(this)
-            if (startedLocationService) Toast.makeText(this, "Location logging started", Toast.LENGTH_SHORT).show()
-            else Toast.makeText(this, "Error starting location logging (${authHelper.sessionIsAuthorized()} ${authHelper.getLocationAllowed()})", Toast.LENGTH_SHORT).show()
+            if (startedLocationService) {
+                Toast.makeText(this, "Location logging started", Toast.LENGTH_SHORT).show()
+                Log.i("MainActivity", "Location service started successfully")
+            } else {
+                Toast.makeText(this, "Error starting location logging (Auth: ${authHelper.sessionIsAuthorized()}, Location: ${authHelper.getLocationAllowed()})", Toast.LENGTH_SHORT).show()
+                Log.e("MainActivity", "Failed to start location service - Auth: ${authHelper.sessionIsAuthorized()}, Location: ${authHelper.getLocationAllowed()}")
+            }
         } else {
-            Toast.makeText(this, "Location logging permission not granted", Toast.LENGTH_SHORT).show()
+            authHelper.setLocationAllowed(false)
+            val missingPermissions = mutableListOf<String>()
+            if (!hasFineLocation) missingPermissions.add("Fine Location")
+            if (!hasBackgroundLocation) missingPermissions.add("Background Location")
+            
+            val message = "Missing permissions: ${missingPermissions.joinToString(", ")}"
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+            Log.w("MainActivity", message)
         }
     }
 
@@ -262,6 +280,16 @@ class MainActivity : BaseActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             MY_PERMISSIONS_ACCESS_FINE_LOCATION -> {
+                Log.i("MainActivity", "Fine location permission result: ${grantResults.firstOrNull() == PERMISSION_GRANTED}")
+                if (grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED) {
+                    // Fine location granted, now check for background location
+                    checkLocationPermission()
+                }
+                checkStoragePermission()
+                startLocationLogging()
+            }
+            MY_PERMISSIONS_ACCESS_BACKGROUND_LOCATION -> {
+                Log.i("MainActivity", "Background location permission result: ${grantResults.firstOrNull() == PERMISSION_GRANTED}")
                 checkStoragePermission()
                 startLocationLogging()
             }

@@ -1,10 +1,7 @@
 package de.thepiwo.lifelogging.android.util
 
 import android.annotation.SuppressLint
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import com.google.gson.GsonBuilder
@@ -19,7 +16,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.io.FileOutputStream
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,21 +41,75 @@ constructor(private val loggingApiService: LoggingApiService,
 
     @SuppressLint("CheckResult")
     fun createLogItem(logEntryInsert: LogEntryInsert, errorFileLog: File? = null) {
+        Log.i("DataHandler", "🚀 === STARTING LOCATION DATA TRANSMISSION ===")
+        Log.i("DataHandler", "📍 Location data to send: $logEntryInsert")
+        Log.i("DataHandler", "🔐 Auth status: ${authHelper.sessionIsAuthorized()}")
+        Log.i("DataHandler", "🎫 Token available: ${authHelper.getToken() != null}")
+        
+        if (authHelper.getToken() != null) {
+            Log.i("DataHandler", "🎫 Token preview: ${authHelper.getToken()?.token?.take(10)}...")
+        }
+        
+        
+        Log.i("DataHandler", "🌐 API URL: ${authHelper.getApiUrl()}")
+        Log.i("DataHandler", "📡 Starting API call to create log item...")
+        
         loggingApiService.createLogItem(logEntryInsert)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe { 
+                    Log.i("DataHandler", "🔄 API call subscribed - request in progress...")
+                }
                 .subscribe(
-                        {
-                            Log.i("DataHandler", "logItem sent $logEntryInsert")
+                        { response ->
+                            Log.i("DataHandler", "✅ === LOCATION DATA SENT SUCCESSFULLY ===")
+                            Log.i("DataHandler", "📊 API Response: $response")
+                            Log.i("DataHandler", "📍 Original data: $logEntryInsert")
+                            Log.i("DataHandler", "🎉 Location should now appear in the app's log list!")
                         },
                         { error ->
-                            error.printStackTrace()
-                            Log.e("DataHandler", "logItem error: ${error.message}")
+                            Log.e("DataHandler", "❌ === LOCATION DATA TRANSMISSION FAILED ===")
+                            Log.e("DataHandler", "💥 Error message: ${error.message}")
+                            Log.e("DataHandler", "🔍 Error type: ${error.javaClass.simpleName}")
+                            Log.e("DataHandler", "📍 Failed data: $logEntryInsert")
+                            
+                            // Detailed error analysis
+                            when (error) {
+                                is retrofit2.HttpException -> {
+                                    Log.e("DataHandler", "🌐 HTTP Error - Code: ${error.code()}, Message: ${error.message()}")
+                                    when (error.code()) {
+                                        401 -> Log.e("DataHandler", "🔐 UNAUTHORIZED - Token may be expired or invalid")
+                                        403 -> Log.e("DataHandler", "🚫 FORBIDDEN - Access denied")
+                                        404 -> Log.e("DataHandler", "🔍 NOT FOUND - API endpoint may be incorrect")
+                                        500 -> Log.e("DataHandler", "🔥 SERVER ERROR - Backend issue")
+                                        else -> Log.e("DataHandler", "🌐 HTTP ${error.code()} - Check API documentation")
+                                    }
+                                }
+                                is java.net.UnknownHostException -> {
+                                    Log.e("DataHandler", "🌐 NETWORK ERROR - Cannot resolve host, check internet connection")
+                                }
+                                is java.net.SocketTimeoutException -> {
+                                    Log.e("DataHandler", "⏰ TIMEOUT ERROR - Request took too long")
+                                }
+                                is java.net.ConnectException -> {
+                                    Log.e("DataHandler", "🔌 CONNECTION ERROR - Cannot connect to server")
+                                }
+                                else -> {
+                                    Log.e("DataHandler", "❓ UNKNOWN ERROR - ${error.javaClass.simpleName}")
+                                    error.printStackTrace()
+                                }
+                            }
+                            
                             if (errorFileLog != null) {
-                                FileOutputStream(errorFileLog, true).use { stream ->
-                                    val json = GsonBuilder().create().toJson(logEntryInsert)
-                                    stream.write(json.toByteArray(Charsets.UTF_8))
-                                    Log.i("DataHandler", "write $json in file $errorFileLog")
+                                try {
+                                    FileOutputStream(errorFileLog, true).use { stream ->
+                                        val json = GsonBuilder().create().toJson(logEntryInsert)
+                                        val timestamp = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+                                        stream.write("[$timestamp] ${error.javaClass.simpleName}: ${error.message}\n$json\n\n".toByteArray(Charsets.UTF_8))
+                                        Log.i("DataHandler", "📝 Saved failed location data to file: $errorFileLog")
+                                    }
+                                } catch (fileError: Exception) {
+                                    Log.e("DataHandler", "💾 Failed to write to error file: ${fileError.message}")
                                 }
                             }
                         }
@@ -67,9 +117,12 @@ constructor(private val loggingApiService: LoggingApiService,
     }
 
     fun checkLocationServiceRunning(context: Context) {
-        val serviceIntent = Intent(context, LocationRequestService::class.java)
-        val pIntent = PendingIntent.getService(context, 0, serviceIntent, PendingIntent.FLAG_IMMUTABLE)
-        pIntent.send()
+        Log.i("DataHandler", "Checking and starting location service if needed")
+        if (authHelper.sessionIsAuthorized() && authHelper.getLocationAllowed()) {
+            LocationRequestService.startService(context)
+        } else {
+            Log.w("DataHandler", "Not starting location service - not authorized or location not allowed")
+        }
     }
 
     fun startLocationServiceObserver(context: Context): Boolean {
@@ -77,20 +130,18 @@ constructor(private val loggingApiService: LoggingApiService,
         Log.i("DataHandler", "getLocationAllowed ${authHelper.getLocationAllowed()}")
 
         return if (authHelper.sessionIsAuthorized() && authHelper.getLocationAllowed()) {
-
-            val serviceIntent = Intent(context, LocationRequestService::class.java)
-
-            val pIntent = PendingIntent.getService(context, 0, serviceIntent, PendingIntent.FLAG_IMMUTABLE)
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), TimeUnit.MINUTES.toMillis(60), pIntent)
-            context.startService(serviceIntent)
-
-            Log.i("DataHandler", "started location request service")
-
+            LocationRequestService.startService(context)
+            Log.i("DataHandler", "started location request foreground service")
             true
         } else {
+            Log.w("DataHandler", "Cannot start location service - not authorized or location not allowed")
             false
         }
+    }
+
+    fun stopLocationServiceObserver(context: Context) {
+        LocationRequestService.stopService(context)
+        Log.i("DataHandler", "stopped location request service")
     }
 
     fun copyFile(context: Context, uri: Uri): File {
