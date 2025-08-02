@@ -1,6 +1,10 @@
 package de.thepiwo.lifelogging.android.api
 
-import de.thepiwo.lifelogging.android.api.models.*
+import de.thepiwo.lifelogging.android.api.models.LogEntityReturn
+import de.thepiwo.lifelogging.android.api.models.LogEntryInsert
+import de.thepiwo.lifelogging.android.api.models.LogList
+import de.thepiwo.lifelogging.android.api.models.LoginPassword
+import de.thepiwo.lifelogging.android.api.models.Token
 import de.thepiwo.lifelogging.android.util.AuthHelper
 import de.thepiwo.lifelogging.android.util.ConnectivityHelper
 import io.reactivex.Observable
@@ -68,6 +72,16 @@ constructor(@Named("unauthorized") var unauthorizedLoggingApi: LoggingApi,
         )
 
         return failOnErrorResult(authorizedLoggingApi.importSamsung(filePart))
+    }
+
+    fun importGoogle(file: File): Observable<Long> {
+        val filePart = createFormData(
+            "json",
+            file.name,
+            file.asRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+        )
+
+        return failOnErrorResult(authorizedLoggingApi.importGoogle(filePart))
     }
 
 }

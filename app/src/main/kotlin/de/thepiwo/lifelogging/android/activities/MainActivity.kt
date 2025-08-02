@@ -62,7 +62,7 @@ class MainActivity : BaseActivity() {
                 MainScreen(
                     logs = logsLiveData.observeAsState().value,
                     onLogoutClick = { logout() },
-                    onUploadClick = { uploadSamsungHealth() }
+                    onUploadClick = { uploadData() }
                 )
             }
         }
@@ -101,7 +101,7 @@ class MainActivity : BaseActivity() {
                 onClick = onUploadClick,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("upload samsung health zip", fontSize = 16.sp)
+                Text("upload file", fontSize = 16.sp)
             }
             
             Spacer(modifier = Modifier.height(20.dp))
@@ -165,17 +165,33 @@ class MainActivity : BaseActivity() {
         finish()
     }
 
-    private fun uploadSamsungHealth() {
-        fun openFile() {
-            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-                addCategory(Intent.CATEGORY_OPENABLE)
-                type = "application/zip"
+    private fun uploadData() {
+        val options = arrayOf("Google Timeline (JSON)", "Samsung Health (ZIP)")
+        val builder = android.app.AlertDialog.Builder(this)
+        builder.setTitle("Choose data source to upload")
+        builder.setItems(options) { _, which ->
+            when (which) {
+                0 -> openFileForGoogle()
+                1 -> openFileForSamsung()
             }
-
-            startActivityForResult(intent, MY_INTENT_PICK_FILE)
         }
+        builder.show()
+    }
 
-        openFile()
+    private fun openFileForGoogle() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+        }
+        startActivityForResult(intent, MY_INTENT_PICK_GOOGLE_FILE)
+    }
+
+    private fun openFileForSamsung() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/zip"
+        }
+        startActivityForResult(intent, MY_INTENT_PICK_SAMSUNG_FILE)
     }
 
 
@@ -238,6 +254,8 @@ class MainActivity : BaseActivity() {
         const val MY_PERMISSIONS_ACCESS_BACKGROUND_LOCATION: Int = 1341
 
         const val MY_INTENT_PICK_FILE: Int = 1340
+        const val MY_INTENT_PICK_GOOGLE_FILE: Int = 1342
+        const val MY_INTENT_PICK_SAMSUNG_FILE: Int = 1343
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -253,7 +271,26 @@ class MainActivity : BaseActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
         super.onActivityResult(requestCode, resultCode, resultData)
         when (requestCode) {
-            MY_INTENT_PICK_FILE -> {
+            MY_INTENT_PICK_GOOGLE_FILE -> {
+                resultData?.data?.also { uri ->
+                    val file = dataHandler.copyFile(this, uri)
+
+                    loggingApiService.importGoogle(file)
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                            {
+                                Toast.makeText(this, "imported $it Google Timeline entries", Toast.LENGTH_SHORT).show()
+                                file.delete()
+                                getLogs()
+                            },
+                            { error ->
+                                Toast.makeText(this, error.message ?: "Google import error", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                }
+            }
+            MY_INTENT_PICK_SAMSUNG_FILE -> {
                 resultData?.data?.also { uri ->
                     val file = dataHandler.copyFile(this, uri)
 
@@ -262,12 +299,12 @@ class MainActivity : BaseActivity() {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                             {
-                                Toast.makeText(this, "imported $it", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this, "imported $it Samsung Health entries", Toast.LENGTH_SHORT).show()
                                 file.delete()
                                 getLogs()
                             },
                             { error ->
-                                Toast.makeText(this, error.message ?: "fetch error", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this, error.message ?: "Samsung import error", Toast.LENGTH_SHORT).show()
                             }
                         )
                 }
